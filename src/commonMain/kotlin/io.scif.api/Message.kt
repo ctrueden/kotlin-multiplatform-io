@@ -1,6 +1,8 @@
 package io.scif.api
 
-import kotlinx.io.*
+import kotlinx.io.Buffer
+import kotlinx.io.Sink
+import kotlinx.io.Source
 import kotlinxInternal.utf8Size
 
 data class Message(val timestamp: Long, val text: String) {
