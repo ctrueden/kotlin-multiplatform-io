@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform") version "1.9.0"
+    embeddedKotlin("multiplatform")
     id("maven-publish")
 }
 
@@ -56,7 +56,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
           dependencies {
-            api("org.jetbrains.kotlinx:kotlinx-io-core:0.2.1")
+            api("org.jetbrains.kotlinx:kotlinx-io-core:0.3.0")
           }
         }
         val commonTest by getting {
