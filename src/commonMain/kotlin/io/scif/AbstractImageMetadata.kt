@@ -28,13 +28,12 @@
  */
 package io.scif
 
-//import io.scif.util.FormatTools
+import io.scif.util.FormatTools
 //import io.scif.util.SCIFIOMetadataTools
 //import net.imagej.axis.Axes
 //import net.imagej.axis.AxisType
-//import net.imagej.axis.CalibratedAxis
+import net.imagej.axis.CalibratedAxis
 //import org.scijava.util.ArrayUtils
-import io.scif.util.FormatTools
 import net.imglib2.Dimensions
 import net.imglib2.Interval
 import safeMultiply64
