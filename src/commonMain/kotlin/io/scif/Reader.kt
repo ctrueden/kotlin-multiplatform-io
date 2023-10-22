@@ -257,7 +257,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, block: Block): Block
+    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, block: Block): Block
 
     /**
      * Reads a raw block from disk.
@@ -269,7 +269,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, scanlinePad: Int, block: Block): Block
+    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, scanlinePad: Int, block: Block): Block
 
     /** Determines the number of blocks in the current file.  */
     fun getBlockCount(imageIndex: Int): Long

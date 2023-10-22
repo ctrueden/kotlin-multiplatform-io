@@ -114,81 +114,92 @@ interface TypedWriter<M : TypedMetadata> : Writer {
 </P></M> */
 interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>> : Reader {
 
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openBlock(imageIndex: Int, blockIndex: Long): B
 
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, bounds: Interval): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block): B
 
-        /**
-         * Generic-parameterized `openBlock` method, using
-         * [io.scif.TypedMetadata] to avoid type erasure conflicts with
-         * [io.scif.Reader.openBlock].
-         *
-         * @see io.scif.Reader.openBlock
-         */
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block): B
+    /**
+     * Version of {@link #openBlock(int, long, Block)} with type-narrowed input
+     * parameter.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openBlock(imageIndex: Int, blockIndex: Long, block: B): B
 
-        /**
-         * Generic-parameterized `openBlock` method, using
-         * [io.scif.TypedMetadata] to avoid type erasure conflicts with
-         * [io.scif.Reader.openBlock].
-         *
-         * @see io.scif.Reader.openBlock
-         */
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, bounds: Interval): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openBlock(imageIndex: Int, blockIndex: Long, config: SCIFIOConfig): B
 
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, config: SCIFIOConfig): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, config: SCIFIOConfig): B
 
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, bounds: Interval, config: SCIFIOConfig): B
+    /** @see io.scif.TypedReader.openBlock */
+    @Throws(FormatException::class, IOException::class)
+    fun openBlock(imageIndex: Int, blockIndex: Long, block: B, config: SCIFIOConfig): B
 
-        /** @see io.scif.TypedReader.openBlock */
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, config: SCIFIOConfig): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval): B
 
-        /** @see io.scif.TypedReader.openBlock */
-        @Throws(FormatException::class, IOException::class)
-        override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, bounds: Interval, config: SCIFIOConfig): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block): B
 
-        @set:Throws(IOException::class)
-        override var metadata: Metadata?
+    /**
+     * Version of [.openRegion] with
+     * type-narrowed input parameter.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: B): B
 
-        @set:Throws(IOException::class)
-        var m: M?
+    @Throws(FormatException::class, IOException::class)
+    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, config: SCIFIOConfig): B
 
-        /**
-         * Generic-parameterized `readBlock` method, using
-         * [io.scif.TypedMetadata] to avoid type erasure conflicts with
-         * [io.scif.Reader.readBlock]
-         *
-         * NB Presumes that the source stream `s` is set to the correct offset,
-         * i.e. start of the block
-         *
-         * @see io.scif.Reader.readBlock
-         */
-        @Throws(IOException::class)
-        override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, block: Block): B
+    @Throws(FormatException::class, IOException::class)
+    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block, config: SCIFIOConfig): B
 
-        /**
-         * Generic-parameterized `readBlock` method, using
-         * [io.scif.TypedMetadata] to avoid type erasure conflicts with
-         * [io.scif.Reader.readBlock]
-         *
-         * NB Presumes that the source stream `s` is set to the correct offset,
-         * i.e. start of the block
-         *
-         * @see io.scif.Reader.readBlock
-         */
-        @Throws(IOException::class)
-        override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, scanlinePad: Int, block: Block): B
+    /**
+     * Version of
+     * [.openRegion] with
+     * type-narrowed input parameter.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: B, config: SCIFIOConfig): B
 
-        override fun createBlock(bounds: Interval): B
+    @set:Throws(IOException::class)
+    override var metadata: Metadata?
 
-        /** Returns the class of `Blocks` associated with this `Reader`. */
-        val blockClass: KClass<B>
+    @set:Throws(IOException::class)
+    var m: M?
+
+    /**
+     * Generic-parameterized `readBlock` method, using
+     * [io.scif.TypedMetadata] to avoid type erasure conflicts with
+     * [io.scif.Reader.readBlock]
+     *
+     * NB Presumes that the source stream `s` is set to the correct offset,
+     * i.e. start of the block
+     *
+     * @see io.scif.Reader.readBlock
+     */
+    @Throws(IOException::class)
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, block: Block): B
+
+    /**
+     * Generic-parameterized `readBlock` method, using
+     * [io.scif.TypedMetadata] to avoid type erasure conflicts with
+     * [io.scif.Reader.readBlock]
+     *
+     * NB Presumes that the source stream `s` is set to the correct offset,
+     * i.e. start of the block
+     *
+     * @see io.scif.Reader.readBlock
+     */
+    @Throws(IOException::class)
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, scanlinePad: Int, block: Block): B
+
+    override fun createBlock(extents: Interval): B
+
+    /** Returns the class of `Blocks` associated with this `Reader`. */
+    val blockClass: KClass<B>
 }
+
 interface TypedBlock<T : NativeType<T>, A> : Block
