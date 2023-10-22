@@ -202,4 +202,11 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
     val blockClass: KClass<B>
 }
 
-interface TypedBlock<T : NativeType<T>, A> : Block
+/**
+ * @author hinerm
+ *
+ * @param <T> - The backing type (e.g. byte[], bufferedimage, etc..)
+</T> */
+interface TypedBlock<T> : Block {
+    fun get(): T
+}

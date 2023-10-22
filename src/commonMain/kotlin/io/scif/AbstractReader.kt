@@ -80,7 +80,10 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
 
     @Throws(FormatException::class, IOException::class)
     override fun openBlock(imageIndex: Int, blockIndex: Long, config: SCIFIOConfig): B {
+        //FIXME how should we get Intervals from the Metadata?
         val bounds: Interval = FinalInterval(*metadata!![imageIndex].axesLengthsPlanar!!)
+//        val blockMax: LongArray = metadata!![imageIndex].getAxesLengthsPlanar()
+//        val blockMin = LongArray(blockMax.size)
         return openBlock(imageIndex, blockIndex, bounds, config)
     }
 
@@ -121,6 +124,9 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
 
 
     override fun getOptimalBlockSize(imageIndex: Int): Interval {
+        // actually this maybe shouldn't return an interval, because it's a block SIZE
+        // which doesn't specify minimums...
+
         // x optimal
         return metadata!![imageIndex].getAxisLength(Axes.X)
 
@@ -243,21 +249,21 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
         else if (SCIFIOMetadataTools.wholeRow(imageIndex, metadata, range) && scanlinePad == 0) {
             if (SCIFIOMetadataTools.countInterleavedAxes(metadata, imageIndex) > 0) {
                 var bytesToSkip = bpp
-                bytesToSkip *= range.min(xIndex)
+                bytesToSkip *= range.min(xIndex).i
                 var bytesToRead = bytesToSkip
                 for (i in range.dimensions)
                     if (i != xIndex) {
                         bytesToSkip *= when (i) {
                             yIndex -> range.min(i)
-                            else -> range.dimension(i)
+                            else -> range.max(i)
                         }.i
-                        bytesToRead *= range.dimension(i).i
+                        bytesToRead *= range.max(i).i
                     }
                 s.skip(bytesToSkip)
                 s.read(bytes, 0, bytesToRead)
             } else {
-                val rowLen = (bpp * range.dimension(xIndex)).i
-                val h = range.dimension(yIndex).i
+                val rowLen = (bpp * range.max(xIndex)).i
+                val h = range.max(yIndex).i
                 val y = range.min(yIndex).i
                 var c: Long = metadata[imageIndex].getAxisLength(Axes.CHANNEL)
                 if (c <= 0 || !metadata[imageIndex].isMultichannel()) c = 1
@@ -280,26 +286,25 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
 
                 bytesToSkip = bpp
                 var bytesToRead = bytesToSkip
-                bytesToRead *= range.dimension(xIndex).i
+                bytesToRead *= range.max(xIndex).i
                 bytesToRead *= blockProduct.i
                 bytesToSkip *= range.min(xIndex).i
                 bytesToSkip *= blockProduct.i
 
-                for (row in 0..range.dimension(yIndex)) {
+                for (row in 0..range.max(yIndex)) {
                     s.skipBytes(bytesToSkip)
                     s.read(bytes, row * bytesToRead, bytesToRead)
-                    if (row < range.dimension(yIndex))
+                    if (row < range.max(yIndex))
                         // no need to skip bytes after reading final row
 
                     // no need to skip bytes after reading final row
-                        s.skipBytes((blockProduct * (scanlineWidth -
-                                range.dimension(xIndex) - range.min(xIndex))).i) // FIXME or just range.dimension??
+                        s.skipBytes((blockProduct * (scanlineWidth - range.max(xIndex) - range.min(xIndex))).i)
                 }
             } else {
                 val c: Long = metadata[imageIndex].getAxisLength(Axes.CHANNEL)
 
-                val w = range.dimension(xIndex).i
-                val h = range.dimension(yIndex).i
+                val w = range.max(xIndex).i
+                val h = range.max(yIndex).i
                 val x = range.min(xIndex).i
                 val y = range.min(yIndex).i
                 for (channel in 0..<c) {

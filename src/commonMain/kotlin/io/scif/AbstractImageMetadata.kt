@@ -34,9 +34,11 @@ package io.scif
 //import net.imagej.axis.AxisType
 //import net.imagej.axis.CalibratedAxis
 //import org.scijava.util.ArrayUtils
+import io.scif.util.FormatTools
+import net.imglib2.Dimensions
+import net.imglib2.Interval
 import safeMultiply64
 import uns.L
-import kotlin.jvm.Transient
 
 /**
  * Abstract superclass of all [io.scif.ImageMetadata] implementations.
@@ -47,19 +49,9 @@ import kotlin.jvm.Transient
  *
  * @author Mark Hiner
  */
-abstract class AbstractImageMetadata() : ImageMetadata {
+abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis>, ImageMetadata {
+
     // -- Fields --
-    /** Cached list of planar axes.  */
-    //    @Transient
-    //    private var planarAxes: MutableList<CalibratedAxis>? = null
-
-    /** Cached list of non-planar axes.  */
-    //    @Transient
-    //    private var extendedAxes: MutableList<CalibratedAxis>? = null
-
-    /** Cached list of significant (non-trailing length 1) axes.  */
-    //    @Transient
-    //    private var effectiveAxes: MutableList<CalibratedAxis>? = null
 
     /** Width (in pixels) of thumbnail planes in this image.  */
     @Field("thumbSizeX")
@@ -81,18 +73,6 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     override var bitsPerPixel: Int = 0
 
     /**
-     * The Axes types for this image. Order is implied by ordering within this
-     * array
-     */
-    //    @Field("dimTypes")
-    //    @Transient
-    //    override var axes: MutableList<CalibratedAxis>?
-
-    /** Lengths of each axis. Order is parallel of dimTypes.  */
-    //    @Field(label = "dimLengths")
-    //    private val axisLengths: java.util.HashMap<AxisType, Long>?
-
-    /**
      * Indicates whether or not we are confident that the dimension order is
      * correct.
      */
@@ -106,35 +86,6 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     /** Indicates whether or not the images are stored as indexed color.  */
     @Field("indexed")
     override var isIndexed: Boolean = false
-
-    /**
-     * Number of planar axes in this image. These will always be the first axes in
-     * a list of planar and non-planar axes.
-     */
-    @Field("planarAxiscount")
-    override var planarAxisCount: Int = -1
-        set(value) {
-            field = value
-//            clearCachedAxes()
-        }
-        get() {
-//            if (field == -1)
-//                return SCIFIOMetadataTools.guessPlanarAxisCount(axes)
-            return field
-        }
-
-    /**
-     * Number of interleaved axes in this image. These will be the first planar
-     * axes.
-     */
-    @Field("interleavedAxisCount")
-    override var interleavedAxisCount: Int = -1
-        get() {
-            //            if (field == -1) {
-            //                return SCIFIOMetadataTools.guessInterleavedAxisCount(axes)
-            //            }
-            return field
-        }
 
     /** Indicates whether or not we can ignore the color map (if present).  */
     @Field("falseColor")
@@ -171,102 +122,57 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     //    private var table: MetaTable? = null
 
     // -- Constructors --
-    init {
-        //        axes = java.util.ArrayList<CalibratedAxis>()
-        //        axisLengths = java.util.HashMap<AxisType, Long>()
-    }
 
-    constructor(copy: ImageMetadata) : this() {
-        copy(copy)
-    }
+    // -- Constructors --
+    constructor(n: Int) : super(n)
 
-    //    fun setAxes(axes: Array<CalibratedAxis?>, axisLengths: LongArray?) {
-    //        setAxes(*axes)
-    //        setAxisLengths(axisLengths)
-    //    }
-    //
-    //    override fun setAxisTypes(vararg axisTypes: AxisType?) {
-    //        val axes: Array<CalibratedAxis?> = arrayOfNulls<CalibratedAxis>(axisTypes.size)
-    //
-    //        for (i in axisTypes.indices) {
-    //            val t: AxisType? = axisTypes[i]
-    //            var c: CalibratedAxis = getAxis(t)
-    //            if (c == null) c = FormatTools.createAxis(t)
-    //            axes[i] = c
-    //        }
-    //        setAxes(*axes)
-    //    }
-    //
-    //    override fun setAxes(vararg axisTypes: CalibratedAxis?) {
-    //        this.axes = java.util.ArrayList<E>(java.util.Arrays.asList<Array<CalibratedAxis>>(*axisTypes))
-    //        clearCachedAxes()
-    //    }
-    //
-    //    override fun setAxisLengths(axisLengths: LongArray?) {
-    //        if (axisLengths!!.size > axes!!.size) throw java.lang.IllegalArgumentException(
-    //            "Tried to set " + axisLengths.size + " axis lengths, but " + axes
-    //                    .size + " axes present." + " Call setAxisTypes first.")
-    //
-    //        for (i in axisLengths.indices) {
-    //            updateLength(axes!![i].type(), axisLengths[i])
-    //        }
-    //    }
-    //
-    //    override fun setAxisLength(axis: CalibratedAxis, length: Long) {
-    //        setAxisLength(axis.type(), length)
-    //    }
-    //
-    //    override fun setAxisLength(axisType: AxisType, length: Long) {
-    //        if (getAxisIndex(axisType, axes) == -1) {
-    //            addAxis(FormatTools.createAxis(axisType), length)
-    //        } else {
-    //            updateLength(axisType, length)
-    //        }
-    //    }
-    //
-    //    override fun setAxis(index: Int, axis: CalibratedAxis) {
-    //        val oldIndex: Int = getAxisIndex(axis)
-    //
-    //        // Replace existing axis
-    //        if (oldIndex < 0) {
-    //            val length: Long = axisLengths.remove(axes!![index].type())
-    //            axes!!.removeAt(index)
-    //
-    //            if (index == axes!!.size) {
-    //                axes!!.add(axis)
-    //            } else {
-    //                axes!!.add(index, axis)
-    //            }
-    //            axisLengths.put(axis.type(), length)
-    //        } else {
-    //            axes!!.remove(axes!![oldIndex])
-    //            axes!!.add(index, axis)
-    //        }
-    //
-    //        clearCachedAxes()
-    //    }
-    //
-    //    override fun setAxisType(index: Int, axisType: AxisType?) {
-    //        val axis: CalibratedAxis = FormatTools.createAxis(axisType)
-    //        setAxis(index, axis)
-    //    }
+    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
+
+    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
+
+    constructor(interval: Interval) : super(interval)
+
+    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
+
+    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
+
+    constructor(dimensions: Dimensions) : super(dimensions)
+
+    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, axes)
+
+    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
+
+    constructor(dimensions: LongArray) : super(dimensions)
+
+    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+
+    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
+
+    constructor(min: LongArray, max: LongArray) : super(min, max)
+
+    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
+
+    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
+
+    constructor(source: ImageMetadata) : super(source) {
+        copy(source)
+    }
 
     override val size: Long
         // -- Getters --
         get() {
             var size: Long = 1
 
-            //            for (a in axes) {
-            //                size = ArrayUtils.safeMultiply64(size, getAxisLength(a))
-            //            }
+            for (i in 0 until numDimensions) {
+                //FIXME should we be long-backed instead of doubles?
+                //FIXME should we have a method in CalibratedRealInterval that is Max - Min?
+                size = DataTools.safeMultiply64(size, (realMax(i) - realMin(i)) as Long)
+            }
 
             val bytesPerPixel = bitsPerPixel / 8
 
             return safeMultiply64(size, bytesPerPixel.L)
         }
-
-    override val planeSize: Long
-        get() = size / planeCount
 
     //    override fun getThumbSizeX(): Long {
     //        var thumbX = thumbSizeX
@@ -274,8 +180,9 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     //        // If the X thumbSize isn't explicitly set, scale the actual width using
     //        // the thumbnail dimension constant
     //        if (thumbX == 0L) {
-    //            val sx: Long = getAxisLength(Axes.X)
-    //            val sy: Long = getAxisLength(Axes.Y)
+    //            //FIXME want this API in calibratedrealinterval
+    //			      final long sx = (long)(realMax(dimensionIndex(Axes.X)) - realMin(dimensionIndex(Axes.X)));
+    //			      final long sy = (long)(realMax(dimensionIndex(Axes.Y)) - realMin(dimensionIndex(Axes.Y)));
     //
     //            if (sx < THUMBNAIL_DIMENSION && sy < THUMBNAIL_DIMENSION) thumbX = sx
     //            else if (sx > sy) thumbX = THUMBNAIL_DIMENSION
@@ -292,8 +199,9 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     //        // If the Y thumbSize isn't explicitly set, scale the actual width using
     //        // the thumbnail dimension constant
     //        if (thumbY == 0L) {
-    //            val sx: Long = getAxisLength(Axes.X)
-    //            val sy: Long = getAxisLength(Axes.Y)
+    //            //FIXME want this API in calibratedrealinterval
+    //			      final long sx = (long)(realMax(dimensionIndex(Axes.X)) - realMin(dimensionIndex(Axes.X)));
+    //			      final long sy = (long)(realMax(dimensionIndex(Axes.Y)) - realMin(dimensionIndex(Axes.Y)));
     //            thumbY = 1
     //
     //            if (sx < THUMBNAIL_DIMENSION && sy < THUMBNAIL_DIMENSION) thumbY = sy
@@ -305,18 +213,12 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     //        return thumbY
     //    }
     //
-    //    override fun getAxis(axisType: AxisType?): CalibratedAxis? {
-    //        for (axis in axes) {
-    //            if (axis.type().equals(axisType)) return axis
-    //        }
-    //        return null
-    //    }
-    //
-    //    override fun getBitsPerPixel(): Int {
-    //        if (bitsPerPixel <= 0) return FormatTools.getBitsPerPixel(pixelType)
-    //        return bitsPerPixel
-    //    }
-    //
+    override var bitsPerPixel: Int = 0
+        get() {
+            if (bitsPerPixel <= 0) return FormatTools.getBitsPerPixel(pixelType)
+            return bitsPerPixel
+        }
+
     //    override fun getAxes(): List<CalibratedAxis>? {
     //        return getEffectiveAxes()
     //    }
@@ -327,250 +229,68 @@ abstract class AbstractImageMetadata() : ImageMetadata {
     //    override val axesNonPlanar: List<Any>?
     //        get() = getAxisList(false)
 
-    override val planeCount: Long
+    override val blockCount: Long
         get() {
             var length: Long = 1
 
-            //            for (t in axesNonPlanar!!)
-            //                length *= getAxisLength(t)
+            for (t in getAxesNonPlanar()) {
+                length *= getAxisLength(t)
+            }
 
             return length
         }
 
-//    override val axesLengths: LongArray
-//        get() = getAxesLengths(axes)
+    override val isMultichannel: Boolean
+        get() {
+            val cIndex: Int = getAxisIndex(Axes.CHANNEL)
+            return (cIndex < planarAxisCount && cIndex >= 0)
+        }
 
-    //    override fun getAxesLengths(axes: List<CalibratedAxis>?): LongArray {
-    //        val lengths = LongArray(axes!!.size)
-    //
-    //        for (i in axes.indices) {
-    //            lengths[i] = getAxisLength(axes[i])
-    //        }
-    //
-    //        return lengths
-    //    }
+    final override fun copy(toCopy: ImageMetadata) {
+        populate(toCopy.name, toCopy.axes, toCopy.getAxesLengths(),
+                 toCopy.pixelType, toCopy.isOrderCertain, toCopy.isLittleEndian,
+                 toCopy.isIndexed, toCopy.isFalseColor, toCopy.isMetadataComplete)
 
-    override val axesLengthsPlanar: LongArray?
-        get() = getAxesLengths(axesPlanar)
+        // TODO Use setters, not direct assignment.
+        table = DefaultMetaTable(toCopy.table)
+        thumbnail = toCopy.isThumbnail
+        thumbSizeX = toCopy.thumbSizeX
+        thumbSizeY = toCopy.thumbSizeY
+    }
 
-    override val axesLengthsNonPlanar: LongArray?
-        get() = getAxesLengths(axesNonPlanar)
+    fun populate(name: String, axes: List<CalibratedAxis>,
+                 lengths: LongArray, pixelType: Int, orderCertain: Boolean,
+                 littleEndian: Boolean, indexed: Boolean, falseColor: Boolean,
+                 metadataComplete: Boolean) =
+        populate(name, axes, lengths, pixelType, FormatTools.getBitsPerPixel(pixelType),
+                 orderCertain, littleEndian, indexed, falseColor, metadataComplete)
 
-//    override val isMultichannel: Boolean
-//        get() {
-//            val cIndex: Int = getAxisIndex(Axes.CHANNEL)
-//            return (cIndex < planarAxisCount && cIndex >= 0)
-//        }
-//
-//    override fun getAxis(axisIndex: Int): CalibratedAxis? {
-//        return axes!![axisIndex]
-//    }
-//
-//    override fun getAxisLength(axisIndex: Int): Long {
-//        if (axisIndex < 0 || axisIndex >= axes!!.size) {
-//            return 1
-//        }
-//
-//        return getAxisLength(getAxis(axisIndex))
-//    }
-//
-//    override fun getAxisLength(t: CalibratedAxis?): Long {
-//        return if (t == null) 1 else getAxisLength(t.type())
-//    }
-//
-//    override fun getAxisLength(t: AxisType?): Long {
-//        if (axisLengths == null || !axisLengths.containsKey(t) ||
-//            (effectiveAxes != null && getAxisIndex(t) == -1)) {
-//            return 1
-//        }
-//
-//        return axisLengths.get(t)
-//    }
-//
-//    override fun getAxisIndex(axis: CalibratedAxis): Int {
-//        return getAxisIndex(axis.type())
-//    }
-//
-//    override fun getAxisIndex(axisType: AxisType): Int {
-//        // Use effectiveAxes if possible. If not, default to axes.
-//        val knownAxes: List<CalibratedAxis>? = if (effectiveAxes == null) axes
-//        else effectiveAxes
-//
-//        return getAxisIndex(axisType, knownAxes)
-//    }
-//
-//    override fun addAxis(axis: CalibratedAxis?) {
-//        addAxis(axis, 1)
-//    }
-//
-//    override fun addAxis(axis: CalibratedAxis, value: Long) {
-//        if (axes == null) axes = java.util.ArrayList<CalibratedAxis>()
-//
-//        // See if the axis already exists
-//        if (!axes!!.contains(axis)) {
-//            axes!!.add(axis)
-//            clearCachedAxes()
-//        }
-//
-//        updateLength(axis.type(), value)
-//    }
-//
-//    override fun addAxis(axisType: AxisType?, value: Long) {
-//        addAxis(FormatTools.createAxis(axisType), value)
-//    }
-//
-//    final override fun copy(toCopy: ImageMetadata?) {
-//        populate(toCopy!!.name, toCopy.axes, toCopy.axesLengths, toCopy
-//                .pixelType, toCopy.isOrderCertain, toCopy.isLittleEndian, toCopy
-//                         .isIndexed, toCopy.isFalseColor, toCopy.isMetadataComplete)
-//        this.table = DefaultMetaTable(toCopy.getTable())
-//        this.isThumbnail = toCopy.isThumbnail
-//        this.thumbSizeX = toCopy.thumbSizeX
-//        this.thumbSizeY = toCopy.thumbSizeY
-//        this.planarAxisCount = toCopy.planarAxisCount
-//    }
-//
-//    fun populate(name: String?, axes: List<CalibratedAxis?>?,
-//                 lengths: LongArray, pixelType: Int, orderCertain: Boolean,
-//                 littleEndian: Boolean, indexed: Boolean, falseColor: Boolean,
-//                 metadataComplete: Boolean) {
-//        populate(name, axes, lengths, pixelType, FormatTools.getBitsPerPixel(
-//            pixelType), orderCertain, littleEndian, indexed, falseColor,
-//                 metadataComplete)
-//    }
-//
-//    fun populate(name: String?, axes: List<CalibratedAxis?>?,
-//                 lengths: LongArray, pixelType: Int, bitsPerPixel: Int,
-//                 orderCertain: Boolean, littleEndian: Boolean,
-//                 indexed: Boolean, falseColor: Boolean,
-//                 metadataComplete: Boolean) {
-//        this.name = name
-//        this.axes = java.util.ArrayList(axes)
-//        setAxisLengths(lengths.clone())
-//        this.bitsPerPixel = bitsPerPixel
-//        this.isFalseColor = falseColor
-//        this.isIndexed = indexed
-//        this.isLittleEndian = littleEndian
-//        this.isOrderCertain = orderCertain
-//        this.pixelType = pixelType
-//    }
-//
-//    // -- HasTable API Methods --
-//    fun getTable(): MetaTable? {
-//        if (table == null) table = DefaultMetaTable()
-//        return table
-//    }
-//
-//    fun setTable(table: MetaTable?) {
-//        this.table = table
-//    }
-//
-//    // -- Object API --
-//    override fun toString(): String {
-//        return FieldPrinter(this).toString()
-//    }
-//
-//    // -- Helper methods --
-//    /**
-//     * Computes and caches the effective (non-trailing-length-1 axes) axis types
-//     * for this dataset.
-//     */
-//    private fun getEffectiveAxes(): List<CalibratedAxis>? {
-//        if (effectiveAxes == null && axes != null) {
-//            var end = axes!!.size
-//
-//            while (end > planarAxisCount) {
-//                val axis: CalibratedAxis = axes!![end - 1]
-//                if (getAxisLength(axis) > 1) {
-//                    break
-//                }
-//                end--
-//            }
-//
-//            effectiveAxes = java.util.ArrayList<CalibratedAxis>()
-//            for (i in 0 until end) {
-//                effectiveAxes!!.add(axes!![i])
-//            }
-//        }
-//
-//        return effectiveAxes
-//    }
+    fun populate(name: String, axes: List<CalibratedAxis>,
+                 lengths: LongArray, pixelType: Int, bitsPerPixel: Int,
+                 orderCertain: Boolean, littleEndian: Boolean,
+                 indexed: Boolean, falseColor: Boolean,
+                 metadataComplete: Boolean) {
+        this.name = name
+        this.bitsPerPixel = bitsPerPixel
+        this.isFalseColor = falseColor
+        this.isIndexed = indexed
+        this.isLittleEndian = littleEndian
+        this.isOrderCertain = orderCertain
+        this.pixelType = pixelType
+    }
 
-    /**
-     * Searches the given list of axes for an axis of the given type, returning
-     * the index of the first match.
-     */
-    //    private fun getAxisIndex(axisType: AxisType,
-    //                             axisList: List<CalibratedAxis>?): Int {
-    //        if (axisList == null) return -1
-    //        var index = -1
-    //        var i = 0
-    //        while (index == -1 && i < axisList.size) {
-    //            if (axisList[i].type().equals(axisType)) index = i
-    //            i++
-    //        }
-    //
-    //        return index
-    //    }
+    // -- HasTable API Methods --
+    fun getTable(): MetaTable? {
+        if (table == null) table = DefaultMetaTable() // maybe make table non-nullable and default to this?
+        return table
+    }
 
-    /**
-     * Resets the cached planar and non-planar axes. Used after the axes or
-     * planarAxisCount are modified.
-     */
-//    private fun clearCachedAxes() {
-//        planarAxes = null
-//        extendedAxes = null
-//        effectiveAxes = null
-//    }
+    fun setTable(table: MetaTable?) {
+        this.table = table
+    }
 
-    //    private fun updateLength(axisType: AxisType, value: Long) {
-    //        axisLengths.put(axisType, value)
-    //        // only effectiveAxes needs to be cleared here, because it's the only
-    //        // cached axis that can be affected by axis lengths.
-    //        effectiveAxes = null
-    //    }
-
-    // If spatial == true, returns every non-CHANNEL axis after both X and Y
-    // have been seen. If false, returns every non-CHANNEL axis until both X
-    // and Y have been seen.
-    //    private fun getAxisList(planar: Boolean): List<CalibratedAxis>? {
-    //        var index = -1
-    //        var end = -1
-    //        var axisList: MutableList<CalibratedAxis>? = null
-    //
-    //        if (planar) {
-    //            if (planarAxes == null) planarAxes = java.util.ArrayList<CalibratedAxis>()
-    //            axisList = planarAxes
-    //            index = 0
-    //            end = planarAxisCount
-    //        } else {
-    //            if (extendedAxes == null) extendedAxes = java.util.ArrayList<CalibratedAxis>()
-    //            axisList = extendedAxes
-    //            index = planarAxisCount
-    //            end = axes!!.size
-    //        }
-    //
-    //        if (axisList!!.size == 0) {
-    //            kotlin.synchronized(axisList) {
-    //                if (axisList.size == 0) {
-    //                    axisList.clear()
-    //
-    //                    var position = 0
-    //                    while (index < end) {
-    //                        if (position <= axisList.size) {
-    //                            axisList.add(axes!![index])
-    //                            position++
-    //                        } else {
-    //                            axisList[position++] = axes!![index]
-    //                        }
-    //                        index++
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        return axisList
-    //    }
+    // -- Object API --
+    override fun toString(): String = FieldPrinter(this).toString()
 
     companion object {
         // -- Constants --

@@ -34,6 +34,7 @@ package io.scif.util
 //import net.imagej.axis.CalibratedAxis
 //import org.scijava.io.handle.DataHandle
 //import org.scijava.io.location.Location
+import io.scif.ImageMetadata
 import io.scif.Metadata
 import net.imglib2.Interval
 import java.util.*
@@ -46,7 +47,82 @@ import java.util.*
  * @author Mark Hiner
  */
 object SCIFIOMetadataTools {
+
     // -- Utility Methods -- Metadata --
+
+    // -- Utility Methods -- Metadata --
+    /**
+     * Counts the number of interleaved axes for specified image of the given [Metadata]
+     */
+    fun countInterleavedAxes(meta: Metadata, imageIndex: Int): Int = countInterleavedAxes(meta[imageIndex])
+
+    /**
+     * Counts the number of interleaved axes in a given [ImageMetadata]
+     */
+    fun countInterleavedAxes(iMeta: ImageMetadata): Int = getInterleavedAxes(iMeta).size()
+
+    /**
+     * Returns the interleaved axes for specified image of the given [Metadata]
+     */
+    fun getInterleavedAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace {
+        return getInterleavedAxes(metadata[imageIndex])
+    }
+
+    /**
+     * Returns the interleaved axes in a given [ImageMetadata]
+     */
+    fun getInterleavedAxes(iMeta: ImageMetadata): DefaultCalibratedSpace {
+        val axes: MutableList<AxisType> = getPlanarAxes(iMeta)
+        axes.remove(Axes.X)
+        axes.remove(Axes.Y)
+        return axes
+    }
+
+    /**
+     * Counts the number of planar axes for specified image of the given [Metadata]
+     */
+    fun countPlanarAxes(meta: Metadata, imageIndex: Int): Int {
+        return countPlanarAxes(meta[imageIndex])
+    }
+
+    /**
+     * Counts the number of planar axes in a given [ImageMetadata]
+     */
+    fun countPlanarAxes(iMeta: ImageMetadata): Int {
+        return getPlanarAxes(iMeta).size()
+    }
+
+    /**
+     * Returns the planar axes for specified image of the given [Metadata]
+     */
+    fun getPlanarAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace {
+        return getPlanarAxes(metadata[imageIndex])
+    }
+
+    /**
+     * Returns the planar axes in a given [ImageMetadata]
+     */
+    fun getPlanarAxes(iMeta: ImageMetadata): DefaultCalibratedSpace {
+        val axes: MutableList<AxisType> = java.util.ArrayList<AxisType>()
+
+        var sawX = false
+        var sawY = false
+
+        // Iterate over the axes in the target ImageMetadata.
+        // Once we have seen both Axes.X and Axes.Y we have identified all planar
+        // axes.
+        var i = 0
+        while (!sawX && !sawY && i < iMeta.axes!!.size) {
+            val axis: CalibratedAxis = iMeta.getAxis(i)
+            axes.add(axis.type())
+            if (axis.type().equals(Axes.X)) sawX = true
+            else if (axis.type().equals(Axes.Y)) sawY = true
+            i++
+        }
+
+        return axes
+    }
+
     /** @Returns true if the provided axes correspond to a complete image plane */
     fun wholeBlock(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
         val wholePlane = wholeRow(imageIndex, meta, range)

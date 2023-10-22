@@ -140,7 +140,7 @@ interface HasMetaTable {
      *
      * @param table - a MetaTable implementation
      */
-    var table: MetaTable
+    var table: MetaTable?
 }
 
 /**
