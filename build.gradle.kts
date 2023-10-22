@@ -4,6 +4,12 @@ plugins {
     embeddedKotlin("multiplatform")
     `maven-publish`
     id("elect86.magik") version "0.3.3"
+    embeddedKotlin("plugin.serialization")
+    embeddedKotlin("plugin.assignment")
+}
+
+assignment {
+    annotation("kotlin.KotlinAssignmentOverloadTarget")
 }
 
 group = "io.scif.api"
@@ -39,11 +45,11 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib"))
 //                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.3.0")
                 implementation("com.squareup.okio:okio:3.6.0")
                 implementation("kotlin.graphics:unsigned:3.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
             }
         }
         val commonTest by getting {
