@@ -29,14 +29,15 @@
 package io.scif.util
 
 //import io.scif.filters.MetadataWrapper
-//import net.imagej.axis.Axes
-//import net.imagej.axis.AxisType
-//import net.imagej.axis.CalibratedAxis
 //import org.scijava.io.handle.DataHandle
 //import org.scijava.io.location.Location
 import io.scif.ImageMetadata
 import io.scif.Metadata
+import net.imagej.axis.Axes
+import net.imagej.axis.CalibratedAxis
+import net.imagej.space.DefaultCalibratedSpace
 import net.imglib2.Interval
+import okio.FileHandle
 import java.util.*
 
 /**
@@ -59,123 +60,79 @@ object SCIFIOMetadataTools {
     /**
      * Counts the number of interleaved axes in a given [ImageMetadata]
      */
-    fun countInterleavedAxes(iMeta: ImageMetadata): Int = getInterleavedAxes(iMeta).size()
+    fun countInterleavedAxes(iMeta: ImageMetadata): Int = getInterleavedAxes(iMeta).numDimensions
 
     /**
      * Returns the interleaved axes for specified image of the given [Metadata]
      */
-    fun getInterleavedAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace {
-        return getInterleavedAxes(metadata[imageIndex])
-    }
+    fun getInterleavedAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace =
+        getInterleavedAxes(metadata[imageIndex])
 
     /**
      * Returns the interleaved axes in a given [ImageMetadata]
      */
-    fun getInterleavedAxes(iMeta: ImageMetadata): DefaultCalibratedSpace {
-        val axes: MutableList<AxisType> = getPlanarAxes(iMeta)
-        axes.remove(Axes.X)
-        axes.remove(Axes.Y)
-        return axes
-    }
+    fun getInterleavedAxes(iMeta: ImageMetadata): DefaultCalibratedSpace = getPlanarAxes(iMeta, false)
 
     /**
      * Counts the number of planar axes for specified image of the given [Metadata]
      */
-    fun countPlanarAxes(meta: Metadata, imageIndex: Int): Int {
-        return countPlanarAxes(meta[imageIndex])
-    }
+    fun countPlanarAxes(meta: Metadata, imageIndex: Int): Int = countPlanarAxes(meta[imageIndex])
 
     /**
      * Counts the number of planar axes in a given [ImageMetadata]
      */
-    fun countPlanarAxes(iMeta: ImageMetadata): Int {
-        return getPlanarAxes(iMeta).size()
-    }
+    fun countPlanarAxes(iMeta: ImageMetadata): Int = getPlanarAxes(iMeta).numDimensions
 
     /**
      * Returns the planar axes for specified image of the given [Metadata]
      */
-    fun getPlanarAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace {
-        return getPlanarAxes(metadata[imageIndex])
-    }
+    fun getPlanarAxes(metadata: Metadata, imageIndex: Int): DefaultCalibratedSpace =
+        getPlanarAxes(metadata[imageIndex])
 
     /**
      * Returns the planar axes in a given [ImageMetadata]
      */
-    fun getPlanarAxes(iMeta: ImageMetadata): DefaultCalibratedSpace {
-        val axes: MutableList<AxisType> = java.util.ArrayList<AxisType>()
+    fun getPlanarAxes(iMeta: ImageMetadata): DefaultCalibratedSpace = getPlanarAxes(iMeta, true)
 
-        var sawX = false
-        var sawY = false
+    /**
+     * @param metadata
+     * @param imageIndex
+     * @return True if [Axes.CHANNEL] appears before [Axes.X] or
+     * [Axes.Y] in the specified image of the given [Metadata]
+     * .
+     */
+    fun isMultichannel(metadata: Metadata, imageIndex: Int): Boolean = isMultichannel(metadata[imageIndex])
 
-        // Iterate over the axes in the target ImageMetadata.
-        // Once we have seen both Axes.X and Axes.Y we have identified all planar
-        // axes.
-        var i = 0
-        while (!sawX && !sawY && i < iMeta.axes!!.size) {
-            val axis: CalibratedAxis = iMeta.getAxis(i)
-            axes.add(axis.type())
-            if (axis.type().equals(Axes.X)) sawX = true
-            else if (axis.type().equals(Axes.Y)) sawY = true
-            i++
-        }
-
-        return axes
+    /**
+     * @param iMeta
+     * @return True if [Axes.CHANNEL] appears before [Axes.X] or
+     * [Axes.Y] in the target [ImageMetadata].
+     */
+    fun isMultichannel(iMeta: ImageMetadata): Boolean {
+        val cIndex: Int = iMeta.dimensionIndex(Axes.CHANNEL)
+        return cIndex < iMeta.dimensionIndex(Axes.X) || cIndex < iMeta.dimensionIndex(Axes.Y)
     }
 
     /** @Returns true if the provided axes correspond to a complete image plane */
     fun wholeBlock(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
         val wholePlane = wholeRow(imageIndex, meta, range)
-        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
-        return wholePlane && range.min(yIndex) == 0L && range.max(yIndex) == meta[imageIndex].getAxisLength(Axes.Y)
+        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
+        return wholePlane && range.min(yIndex) == 0L && range.max(yIndex) == meta[imageIndex].dimension(Axes.Y)
     }
 
     /** @Returns true if the provided axes correspond to a complete image row */
     fun wholeRow(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
         var wholeRow = true
-        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
+        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
 
         for (i in range.dimensions) {
             if (!wholeRow) break
             if (i == yIndex) continue
-            if (range.min(i) != 0L || range.dimension(i) != meta[imageIndex].getAxisLength(i)) wholeRow = false
+            if (range.min(i) != 0L || range.dimension(i) != meta[imageIndex].dimension(i)) wholeRow = false
         }
 
         return true
     }
-
-    //    /**
-    //     * Replaces the first values.length of the provided Metadata's planar axes
-    //     * with the values.
-    //     */
-    //    fun modifyPlanar(imageIndex: Int, meta: Metadata,
-    //                     vararg values: Long): LongArray? {
-    //        val axes = arrayOfNulls<AxisValue>(values.size)
-    //        val axisTypes: List<CalibratedAxis?>? = meta[imageIndex].axes
-    //
-    //        var i = 0
-    //        while (i < axes.size && i < axisTypes!!.size) {
-    //            axes[i] = AxisValue(axisTypes[i].type(), values[i])
-    //            i++
-    //        }
-    //
-    //        return modifyPlanar(imageIndex, meta, *axes)
-    //    }
-    //
-    //    /**
-    //     * Iterates over the provided Metadata's planar axes, replacing any instances
-    //     * of axes with the paired values.
-    //     */
-    //    fun modifyPlanar(imageIndex: Int, meta: Metadata,
-    //                     vararg axes: AxisValue): LongArray? {
-    //        val planarAxes = meta[imageIndex].axesLengthsPlanar
-    //
-    //        for (v in axes) {
-    //            planarAxes!![meta[imageIndex].getAxisIndex(v.getType())] = v.length
-    //        }
-    //
-    //        return planarAxes
-    //    }
 
     /**
      * Casts the provided Metadata object to the generic type of this method.
@@ -209,65 +166,38 @@ object SCIFIOMetadataTools {
     //
     //        return unwrappedMeta
     //    }
-    //
-    //    /**
-    //     * Checks whether the given metadata object has the minimum metadata populated
-    //     * to successfully describe an Image.
-    //     *
-    //     * @throws FormatException if there is a missing metadata field, or the
-    //     * metadata object is uninitialized
-    //     */
-    //    @Throws(FormatException::class) fun verifyMinimumPopulated(src: Metadata?,
-    //                                                               out: DataHandle<Location?>?) {
-    //        verifyMinimumPopulated(src, out, 0)
-    //    }
-    //
-    //    /**
-    //     * Checks whether the given metadata object has the minimum metadata populated
-    //     * to successfully describe the nth Image.
-    //     *
-    //     * @throws FormatException if there is a missing metadata field, or the
-    //     * metadata object is uninitialized
-    //     */
-    //    @Throws(FormatException::class) fun verifyMinimumPopulated(src: Metadata?,
-    //                                                               out: DataHandle<Location?>?, imageIndex: Int) {
-    //        if (src == null) {
-    //            throw FormatException("Metadata object is null; " +
-    //                                          "call Writer.setMetadata() first")
-    //        }
-    //
-    //        if (out == null) {
-    //            throw FormatException("DataHandle object is null; " +
-    //                                          "call Writer.setSource(<Location/DataHandle>) first")
-    //        }
-    //
-    //        if (src[imageIndex].axes!!.size == 0) {
-    //            throw FormatException("Axiscount #$imageIndex is 0")
-    //        }
-    //    }
-    //
-    //    // -- Utility methods -- dimensional axes --
-    //    @Throws(FormatException::class) fun verifyMinimumPopulated(src: Metadata?, loc: Location?) {
-    //        verifyMinimumPopulated(src, loc, 0)
-    //    }
-    //
-    //    @Throws(FormatException::class) fun verifyMinimumPopulated(src: Metadata?, loc: Location?,
-    //                                                               imageIndex: Int) {
-    //        if (src == null) {
-    //            throw FormatException("Metadata object is null; " +
-    //                                          "call Writer.setMetadata() first")
-    //        }
-    //
-    //        if (loc == null) {
-    //            throw FormatException("Location object is null; " +
-    //                                          "call Writer.setSource(<Location>) first")
-    //        }
-    //
-    //        if (src[imageIndex].axes!!.size == 0) {
-    //            throw FormatException("Axiscount #$imageIndex is 0")
-    //        }
-    //    }
-    //
+
+    /**
+     * Checks whether the given metadata object has the minimum metadata populated
+     * to successfully describe an Image.
+     *
+     * @throws FormatException if there is a missing metadata field, or the
+     * metadata object is uninitialized
+     */
+    @Throws(FormatException::class)
+    fun verifyMinimumPopulated(src: Metadata, out: FileHandle/*DataHandle<Location?>?*/) =
+        verifyMinimumPopulated(src, out, 0)
+
+    /**
+     * Checks whether the given metadata object has the minimum metadata populated
+     * to successfully describe the nth Image.
+     *
+     * @throws FormatException if there is a missing metadata field, or the
+     * metadata object is uninitialized
+     */
+    @Throws(FormatException::class)
+    fun verifyMinimumPopulated(src: Metadata, out: FileHandle/*DataHandle<Location?>?*/, imageIndex: Int) {
+        //        if (src == null)
+        //            throw FormatException("Metadata object is null; call Writer.setMetadata() first")
+        //        if (out == null)
+        //            throw FormatException("DataHandle object is null; call Writer.setSource(<Location/DataHandle>) first")
+        TODO()
+        //        if (src[imageIndex].numDimensions == 0)
+        //            throw FormatException("Axiscount #$imageIndex is 0")
+    }
+
+    // -- Utility methods -- dimensional axes --
+
     //    /**
     //     * Guesses at a reasonable default planar axis count for the given list of
     //     * dimensional axes.
@@ -329,26 +259,36 @@ object SCIFIOMetadataTools {
     //        Arrays.sort(keys)
     //        return keys
     //    }
-    //
-    //    // -- Utility class --
-    //    /**
-    //     * Helper class that pairs an AxisType with a length.
-    //     *
-    //     * @author Mark Hiner
-    //     */
-    //    class AxisValue(type: AxisType?, var length: Long) {
-    //        private var type: CalibratedAxis
-    //
-    //        init {
-    //            this.type = createAxis(type)
-    //        }
-    //
-    //        fun getType(): AxisType {
-    //            return type.type()
-    //        }
-    //
-    //        fun setType(type: CalibratedAxis) {
-    //            this.type = type
-    //        }
-    //    }
+
+    // -- Utility Methods --
+
+    // -- Utility Methods --
+    /**
+     * Helper method to get all the planar axes in a given ImageMetadata. Returns
+     * the minimal set of leading axes that includes both [Axes.X] and
+     * [Axes.Y]. Whether or not X and Y are themselves included in the
+     * returned set can be controlled with `includeXY` - if false, the
+     * resulting set is the list of interleaved axes.
+     */
+    private fun getPlanarAxes(iMeta: ImageMetadata,
+                              includeXY: Boolean): DefaultCalibratedSpace {
+        val axes = ArrayList<CalibratedAxis>()
+
+        var xyCount = 0
+
+        // Iterate over the axes in the target ImageMetadata.
+        // Once we have seen both Axes.X and Axes.Y we have identified all planar
+        // axes.
+        var i = 0
+        while (xyCount < 2 && i < iMeta.numDimensions) {
+            val axis: CalibratedAxis = iMeta.axis(i)
+            if (axis.type == Axes.X || axis.type == Axes.Y) {
+                if (includeXY) axes += axis
+                xyCount++
+            } else axes += axis
+            i++
+        }
+
+        return DefaultCalibratedSpace(axes)
+    }
 }

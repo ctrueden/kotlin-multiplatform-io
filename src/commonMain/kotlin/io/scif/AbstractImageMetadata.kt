@@ -28,12 +28,14 @@
  */
 package io.scif
 
-import io.scif.util.FormatTools
 //import io.scif.util.SCIFIOMetadataTools
 //import net.imagej.axis.Axes
 //import net.imagej.axis.AxisType
-import net.imagej.axis.CalibratedAxis
 //import org.scijava.util.ArrayUtils
+import io.scif.util.FormatTools
+import io.scif.util.SCIFIOMetadataTools.getPlanarAxes
+import net.imagej.axis.Axes
+import net.imagej.axis.CalibratedAxis
 import net.imglib2.Dimensions
 import net.imglib2.Interval
 import safeMultiply64
@@ -163,9 +165,7 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
             var size: Long = 1
 
             for (i in 0 until numDimensions) {
-                //FIXME should we be long-backed instead of doubles?
-                //FIXME should we have a method in CalibratedRealInterval that is Max - Min?
-                size = DataTools.safeMultiply64(size, (realMax(i) - realMin(i)) as Long)
+                size = DataTools.safeMultiply64(size, dimension(i))
             }
 
             val bytesPerPixel = bitsPerPixel / 8
@@ -179,9 +179,8 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     //        // If the X thumbSize isn't explicitly set, scale the actual width using
     //        // the thumbnail dimension constant
     //        if (thumbX == 0L) {
-    //            //FIXME want this API in calibratedrealinterval
-    //			      final long sx = (long)(realMax(dimensionIndex(Axes.X)) - realMin(dimensionIndex(Axes.X)));
-    //			      final long sy = (long)(realMax(dimensionIndex(Axes.Y)) - realMin(dimensionIndex(Axes.Y)));
+//                  val sx: Long = dimension(Axes.X)
+//                  val sy: Long = dimension(Axes.Y)
     //
     //            if (sx < THUMBNAIL_DIMENSION && sy < THUMBNAIL_DIMENSION) thumbX = sx
     //            else if (sx > sy) thumbX = THUMBNAIL_DIMENSION
@@ -198,9 +197,8 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     //        // If the Y thumbSize isn't explicitly set, scale the actual width using
     //        // the thumbnail dimension constant
     //        if (thumbY == 0L) {
-    //            //FIXME want this API in calibratedrealinterval
-    //			      final long sx = (long)(realMax(dimensionIndex(Axes.X)) - realMin(dimensionIndex(Axes.X)));
-    //			      final long sy = (long)(realMax(dimensionIndex(Axes.Y)) - realMin(dimensionIndex(Axes.Y)));
+    //            val sx: Long = dimension(Axes.X)
+    //			      val sy: Long = dimension(Axes.Y)
     //            thumbY = 1
     //
     //            if (sx < THUMBNAIL_DIMENSION && sy < THUMBNAIL_DIMENSION) thumbY = sy
@@ -232,22 +230,16 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
         get() {
             var length: Long = 1
 
-            for (t in getAxesNonPlanar()) {
-                length *= getAxisLength(t)
-            }
+            val planarAxes = getPlanarAxes(this)
+
+            for (i in planarAxes.dimensions)
+                length *= dimension(planarAxes.axis(i).type)
 
             return length
         }
 
-    override val isMultichannel: Boolean
-        get() {
-            val cIndex: Int = getAxisIndex(Axes.CHANNEL)
-            return (cIndex < planarAxisCount && cIndex >= 0)
-        }
-
     final override fun copy(toCopy: ImageMetadata) {
-        populate(toCopy.name, toCopy.axes, toCopy.getAxesLengths(),
-                 toCopy.pixelType, toCopy.isOrderCertain, toCopy.isLittleEndian,
+        populate(toCopy.name!!, toCopy.pixelType, toCopy.isOrderCertain, toCopy.isLittleEndian,
                  toCopy.isIndexed, toCopy.isFalseColor, toCopy.isMetadataComplete)
 
         // TODO Use setters, not direct assignment.
@@ -257,15 +249,13 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
         thumbSizeY = toCopy.thumbSizeY
     }
 
-    fun populate(name: String, axes: List<CalibratedAxis>,
-                 lengths: LongArray, pixelType: Int, orderCertain: Boolean,
+    fun populate(name: String, pixelType: Int, orderCertain: Boolean,
                  littleEndian: Boolean, indexed: Boolean, falseColor: Boolean,
                  metadataComplete: Boolean) =
-        populate(name, axes, lengths, pixelType, FormatTools.getBitsPerPixel(pixelType),
+        populate(name, pixelType, FormatTools.getBitsPerPixel(pixelType),
                  orderCertain, littleEndian, indexed, falseColor, metadataComplete)
 
-    fun populate(name: String, axes: List<CalibratedAxis>,
-                 lengths: LongArray, pixelType: Int, bitsPerPixel: Int,
+    fun populate(name: String, pixelType: Int, bitsPerPixel: Int,
                  orderCertain: Boolean, littleEndian: Boolean,
                  indexed: Boolean, falseColor: Boolean,
                  metadataComplete: Boolean) {

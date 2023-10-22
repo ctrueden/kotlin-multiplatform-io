@@ -141,14 +141,12 @@ interface ImageMetadata : CalibratedInterval<CalibratedAxis>, Named, HasMetaTabl
      * [.populate]
      * but automatically determines bits per pixel.
      */
-//    fun populate(name: String?, axes: List<CalibratedAxis?>?, lengths: LongArray?,
-//                 pixelType: Int, orderCertain: Boolean, littleEndian: Boolean, indexed: Boolean,
-//                 falseColor: Boolean, metadataComplete: Boolean)
+    fun populate(name: String, pixelType: Int, orderCertain: Boolean, littleEndian: Boolean,
+                 indexed: Boolean, falseColor: Boolean, metadataComplete: Boolean)
 
     /**
      * Convenience method for manually populating an ImageMetadata.
      */
-//    fun populate(name: String?, axes: List<CalibratedAxis?>?, lengths: LongArray?,
-//                 pixelType: Int, bitsPerPixel: Int, orderCertain: Boolean, littleEndian: Boolean,
-//                 indexed: Boolean, falseColor: Boolean, metadataComplete: Boolean)
+    fun populate(name: String, pixelType: Int, bitsPerPixel: Int, orderCertain: Boolean,
+                 littleEndian: Boolean, indexed: Boolean, falseColor: Boolean, metadataComplete: Boolean)
 }
