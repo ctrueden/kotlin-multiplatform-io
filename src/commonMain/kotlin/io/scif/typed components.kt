@@ -138,23 +138,23 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
     fun openBlock(imageIndex: Int, blockIndex: Long, block: B, config: SCIFIOConfig): B
 
     @Throws(FormatException::class, IOException::class)
-    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval): B
+    override fun openRegion(imageIndex: Int, range: Interval): B
 
     @Throws(FormatException::class, IOException::class)
-    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block): B
+    override fun openRegion(imageIndex: Int, range: Interval, block: Block): B
 
     /**
      * Version of [.openRegion] with
      * type-narrowed input parameter.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: B): B
+    fun openRegion(imageIndex: Int, range: Interval, block: B): B
 
     @Throws(FormatException::class, IOException::class)
-    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, config: SCIFIOConfig): B
+    override fun openRegion(imageIndex: Int, range: Interval, config: SCIFIOConfig): B
 
     @Throws(FormatException::class, IOException::class)
-    override fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block, config: SCIFIOConfig): B
+    override fun openRegion(imageIndex: Int, range: Interval, block: Block, config: SCIFIOConfig): B
 
     /**
      * Version of
@@ -162,7 +162,7 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
      * type-narrowed input parameter.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: B, config: SCIFIOConfig): B
+    fun openRegion(imageIndex: Int, range: Interval, block: B, config: SCIFIOConfig): B
 
     @set:Throws(IOException::class)
     override var metadata: Metadata?
@@ -181,7 +181,7 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
      * @see io.scif.Reader.readBlock
      */
     @Throws(IOException::class)
-    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, block: Block): B
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, block: Block): B
 
     /**
      * Generic-parameterized `readBlock` method, using
@@ -194,7 +194,7 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
      * @see io.scif.Reader.readBlock
      */
     @Throws(IOException::class)
-    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, scanlinePad: Int, block: Block): B
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, scanlinePad: Int, block: Block): B
 
     override fun createBlock(extents: Interval): B
 

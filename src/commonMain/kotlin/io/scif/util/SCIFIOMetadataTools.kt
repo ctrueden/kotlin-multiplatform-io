@@ -28,15 +28,14 @@
  */
 package io.scif.util
 
-import io.scif.Metadata
 //import io.scif.filters.MetadataWrapper
-import io.scif.util.FormatTools.createAxis
 //import net.imagej.axis.Axes
 //import net.imagej.axis.AxisType
 //import net.imagej.axis.CalibratedAxis
-import net.imglib2.Interval
 //import org.scijava.io.handle.DataHandle
 //import org.scijava.io.location.Location
+import io.scif.Metadata
+import net.imglib2.Interval
 import java.util.*
 
 /**
@@ -48,32 +47,27 @@ import java.util.*
  */
 object SCIFIOMetadataTools {
     // -- Utility Methods -- Metadata --
-    /**
-     * Returns true if the provided axes correspond to a complete image plane
-     */
-    //    fun wholePlane(imageIndex: Int, meta: Metadata,
-    //                   bounds: Interval): Boolean {
-    //        val wholePlane = wholeRow(imageIndex, meta, bounds)
-    //        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
-    //        return wholePlane && bounds.min(yIndex) == 0L && bounds.max(yIndex) == meta[imageIndex].getAxisLength(Axes.Y) - 1
-    //    }
-    //
-    //    /**
-    //     * Returns true if the provided axes correspond to a complete image row
-    //     */
-    //    fun wholeRow(imageIndex: Int, meta: Metadata,
-    //                 bounds: Interval): Boolean {
-    //        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
-    //
-    //        for (d in 0 until bounds.numDimensions()) {
-    //            if (d == yIndex) continue
-    //            val length: Long = meta[imageIndex].getAxisLength(d)
-    //            if (bounds.min(d) != 0L || bounds.dimension(d) != length) return false
-    //        }
-    //
-    //        return true
-    //    }
-    //
+    /** @Returns true if the provided axes correspond to a complete image plane */
+    fun wholeBlock(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
+        val wholePlane = wholeRow(imageIndex, meta, range)
+        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
+        return wholePlane && range.min(yIndex) == 0L && range.max(yIndex) == meta[imageIndex].getAxisLength(Axes.Y)
+    }
+
+    /** @Returns true if the provided axes correspond to a complete image row */
+    fun wholeRow(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
+        var wholeRow = true
+        val yIndex: Int = meta[imageIndex].getAxisIndex(Axes.Y)
+
+        for (i in range.dimensions) {
+            if (!wholeRow) break
+            if (i == yIndex) continue
+            if (range.min(i) != 0L || range.dimension(i) != meta[imageIndex].getAxisLength(i)) wholeRow = false
+        }
+
+        return true
+    }
+
     //    /**
     //     * Replaces the first values.length of the provided Metadata's planar axes
     //     * with the values.

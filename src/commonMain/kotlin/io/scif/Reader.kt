@@ -146,12 +146,11 @@ interface Reader : HasFormat, HasSource, Groupable {
      * the pixels at the specified indices.
      *
      * @param imageIndex the image index within the dataset.
-     * @param pos starting position (offsets) of the range to open
      * @param range the extents of the range to open
      * @return The desired sub-region at the specified indices.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval): Block
+    fun openRegion(imageIndex: Int, range: Interval): Block
 
     /**
      * Allows a single `Block` object to be reused by reference when opening
@@ -162,7 +161,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block): Block
+    fun openRegion(imageIndex: Int, range: Interval, block: Block): Block
 
     /**
      * As [.openRegion] with configuration options.
@@ -171,7 +170,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * @return The desired sub-region at the specified indices.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, config: SCIFIOConfig): Block
+    fun openRegion(imageIndex: Int, range: Interval, config: SCIFIOConfig): Block
 
     /**
      * Allows a single `Block` object to be reused by reference when opening
@@ -182,7 +181,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(FormatException::class, IOException::class)
-    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block, config: SCIFIOConfig): Block
+    fun openRegion(imageIndex: Int, range: Interval, block: Block, config: SCIFIOConfig): Block
 
 
     /** Returns the current file.  */
@@ -257,7 +256,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, block: Block): Block
+    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, block: Block): Block
 
     /**
      * Reads a raw block from disk.
@@ -269,7 +268,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * compatible with this `Reader`.
      */
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, pos: Interval, range: Interval, scanlinePad: Int, block: Block): Block
+    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, scanlinePad: Int, block: Block): Block
 
     /** Determines the number of blocks in the current file.  */
     fun getBlockCount(imageIndex: Int): Long

@@ -3,6 +3,7 @@ package io.scif
 import io.scif.*
 import io.scif.config.SCIFIOConfig
 import io.scif.util.FormatTools
+import io.scif.util.FormatTools.getBytesPerPixel
 import io.scif.util.SCIFIOMetadataTools
 import io.scif.util.SCIFIOMetadataTools.castMeta
 import net.imglib2.FinalInterval
@@ -10,6 +11,8 @@ import net.imglib2.Interval
 import net.imglib2.type.NativeType
 import okio.FileHandle
 import okio.IOException
+import uns.i
+import kotlin.math.min
 import kotlin.reflect.KClass
 
 /**
@@ -65,24 +68,16 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
      */
     protected abstract fun createDomainArray(): Array<String>
 
+    // -- Reader API Methods --
+    // TODO Merge common Reader and Writer API methods
     @Throws(FormatException::class, IOException::class)
     override fun openBlock(imageIndex: Int, blockIndex: Long): B =
         openBlock(imageIndex, blockIndex, SCIFIOConfig())
 
     @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, bounds: Interval): B =
-        openBlock(imageIndex, blockIndex, bounds, SCIFIOConfig())
-
-    @Throws(FormatException::class, IOException::class)
     override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block): B =
         openBlock(imageIndex, blockIndex, this.castToTypedBlock<B>(block))
 
-    @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, bounds: Interval): B =
-        openBlock(imageIndex, blockIndex, this.castToTypedBlock(block), bounds)
-
-    // -- Reader API Methods --
-    // TODO Merge common Reader and Writer API methods
     @Throws(FormatException::class, IOException::class)
     override fun openBlock(imageIndex: Int, blockIndex: Long, config: SCIFIOConfig): B {
         val bounds: Interval = FinalInterval(*metadata!![imageIndex].axesLengthsPlanar!!)
@@ -90,9 +85,20 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
     }
 
     @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, bounds: Interval, config: SCIFIOConfig): B {
+    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, config: SCIFIOConfig): B =
+        openBlock(imageIndex, blockIndex, castToTypedBlock<B>(block), config)
+
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, range: Interval): B = openRegion(imageIndex, range, SCIFIOConfig())
+
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, range: Interval, block: Block): B =
+        openRegion(imageIndex, range, castToTypedBlock<B>(block))
+
+    @Throws(FormatException::class, IOException::class)
+    override fun openBlock(imageIndex: Int, range: Interval, config: SCIFIOConfig): B {
         val block = try {
-            createBlock(bounds)
+            createBlock(range)
         } catch (e: IllegalArgumentException) {
             throw FormatException("Image block too large. Only 2GB of data can " +
                                           "be extracted at one time. You can workaround the problem by opening " +
@@ -100,16 +106,12 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
                                           "https://github.com/scifio/scifio-tutorials/blob/master/core" +
                                           "/src/main/java/io/scif/tutorials/core/T1cReadingTilesGood.java", e)
         }
-        return openBlock(imageIndex, blockIndex, block, bounds, config)
+        return openBlock(imageIndex, range, block, config)
     }
 
     @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, config: SCIFIOConfig): B =
-        openBlock(imageIndex, blockIndex, castToTypedBlock<B>(block), config)
-
-    @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, bounds: Interval, config: SCIFIOConfig): B =
-        openBlock(imageIndex, blockIndex, castToTypedBlock<B>(block), bounds, config)
+    override fun openBlock(imageIndex: Int, range: Interval, block: Block, config: SCIFIOConfig): B =
+        openBlock(imageIndex, range, castToTypedBlock<B>(block), config)
 
     val currentLocation: Location?
         get() = metadata?.getSourceLocation()
@@ -117,17 +119,20 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
     val handle: DataHandle<Location>?
         get() = metadata?.getSource()
 
-    override fun getOptimalTileWidth(imageIndex: Int): Long = metadata!![imageIndex].getAxisLength(Axes.X)
 
-    override fun getOptimalTileHeight(imageIndex: Int): Long {
-        val bpp: Int = FormatTools.getBytesPerPixel(metadata.get(imageIndex)
-                                                            .getPixelType())
+    override fun getOptimalBlockSize(imageIndex: Int): Interval {
+        // x optimal
+        return metadata!![imageIndex].getAxisLength(Axes.X)
 
-        val width: Long = metadata.get(imageIndex).getAxisLength(Axes.X)
-        val rgbcCount: Long = metadata.get(imageIndex).getAxisLength(Axes.CHANNEL)
+
+        // y optimal
+        val bpp = getBytesPerPixel(metadata!![imageIndex].pixelType)
+
+        val width: Long = metadata!![imageIndex].getAxisLength(Axes.X)
+        val rgbcCount: Long = metadata!![imageIndex].getAxisLength(Axes.CHANNEL)
 
         val maxHeight = (1024 * 1024) / (width * rgbcCount * bpp)
-        return java.lang.Math.min(maxHeight, metadata.get(imageIndex).getAxisLength(Axes.Y))
+        return min(maxHeight.toDouble(), metadata!![imageIndex].getAxisLength(Axes.Y).toDouble())
     }
 
     override val hasCompanionFiles: Boolean
@@ -193,14 +198,12 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
     //    }
 
     @Throws(IOException::class)
-    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, block: Block): B =
-        readBlock(s, imageIndex, bounds, castToTypedBlock<B>(block))
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, block: Block): B =
+        readBlock(s, imageIndex, range, castToTypedBlock(block))
 
     @Throws(IOException::class)
-    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, scanlinePad: Int, block: Block): B =
-        readBlock(s, imageIndex, bounds, scanlinePad, castToTypedBlock<B>(block))
-
-    override fun getBlockCount(imageIndex: Int): Long = metadata!![imageIndex].planeCount
+    override fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, scanlinePad: Int, block: Block): B =
+        readBlock(s, imageIndex, range, scanlinePad, castToTypedBlock(block))
 
     override val imageCount: Int
         get() = metadata!!.imageCount
@@ -220,95 +223,86 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
         openBlock(imageIndex, blockIndex, block, SCIFIOConfig())
 
     @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, block: B, config: SCIFIOConfig): B =
-        openBlock(imageIndex, blockIndex, block, block.interval, config)
-
-    @Throws(FormatException::class, IOException::class)
-    override fun openBlock(imageIndex: Int, blockIndex: Long, block: B, bounds: Interval): B =
-        openBlock(imageIndex, blockIndex, block, block.interval, SCIFIOConfig())
+    override fun openBlock(imageIndex: Int, range: Interval, block: B, config: SCIFIOConfig): B =
+        openBlock(imageIndex, range, block, block.interval, config)
 
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, bounds: Interval, block: B): B =
-        readBlock(s, imageIndex, bounds, 0, block)
+    fun readBlock(/*s: DataHandle<Location?>?*/s: FileHandle, imageIndex: Int, range: Interval, block: B): B =
+        readBlock(s, imageIndex, range, 0, block)
 
     @Throws(IOException::class)
-    fun readBlock(/*s: DataHandle<Location?>*/s: FileHandle, imageIndex: Int, bounds: Interval, scanlinePad: Int, block: B): B {
-        val bpp = FormatTools.getBytesPerPixel(metadata!![imageIndex].pixelType)
+    fun readBlock(/*s: DataHandle<Location?>*/s: FileHandle, imageIndex: Int, range: Interval, scanlinePad: Int, block: B): B {
+        val metadata = metadata!!
+        val bpp = FormatTools.getBytesPerPixel(metadata[imageIndex].pixelType)
 
         val bytes: ByteArray = block.getBytes()
-        val xIndex = metadata!![imageIndex].getAxisIndex(Axes.X)
-        val yIndex = metadata!![imageIndex].getAxisIndex(Axes.Y)
-        if (SCIFIOMetadataTools.wholeBlock(imageIndex, metadata, bounds) && scanlinePad == 0)
+        val xIndex: Int = metadata[imageIndex].getAxisIndex(Axes.X)
+        val yIndex: Int = metadata[imageIndex].getAxisIndex(Axes.Y)
+        if (SCIFIOMetadataTools.wholeBlock(imageIndex, metadata, range) && scanlinePad == 0)
             s.read(bytes)
-        else if (SCIFIOMetadataTools.wholeRow(imageIndex, metadata, bounds) && scanlinePad == 0) {
-            if (metadata.get(imageIndex).getInterleavedAxisCount() > 0) {
+        else if (SCIFIOMetadataTools.wholeRow(imageIndex, metadata, range) && scanlinePad == 0) {
+            if (SCIFIOMetadataTools.countInterleavedAxes(metadata, imageIndex) > 0) {
                 var bytesToSkip = bpp
-                bytesToSkip *= bounds.max(xIndex)
+                bytesToSkip *= range.min(xIndex)
                 var bytesToRead = bytesToSkip
-                for (i in bounds.dimensions) {
+                for (i in range.dimensions)
                     if (i != xIndex) {
-                        if (i == yIndex) {
-                            bytesToSkip *= bounds.min(i)
-                        } else {
-                            bytesToSkip *= bounds.max(i)
-                        }
-                        bytesToRead *= bounds.max(i)
+                        bytesToSkip *= when (i) {
+                            yIndex -> range.min(i)
+                            else -> range.dimension(i)
+                        }.i
+                        bytesToRead *= range.dimension(i).i
                     }
-                }
                 s.skip(bytesToSkip)
                 s.read(bytes, 0, bytesToRead)
             } else {
-                val rowLen = (bpp * bounds.max(xIndex)) as Int
-                val h = bounds.max(yIndex) as Int
-                val y = bounds.min(yIndex) as Int
-                var c: Long = metadata.get(imageIndex).getAxisLength(Axes.CHANNEL)
-                if (c <= 0 || !metadata.get(imageIndex).isMultichannel()) c = 1
-                for (channel in 0 until c) {
+                val rowLen = (bpp * range.dimension(xIndex)).i
+                val h = range.dimension(yIndex).i
+                val y = range.min(yIndex).i
+                var c: Long = metadata[imageIndex].getAxisLength(Axes.CHANNEL)
+                if (c <= 0 || !metadata[imageIndex].isMultichannel()) c = 1
+                for (channel in 0..<c) {
                     s.skipBytes(y * rowLen)
                     s.read(bytes, channel * h * rowLen, h * rowLen)
-                    if (channel < c - 1) {
+                    if (channel < c - 1)
                         // no need to skip bytes after reading final channel
-                        s.skipBytes((metadata.get(imageIndex).getAxisLength(Axes.Y) -
-                                y - h) as Int * rowLen)
-                    }
+                        s.skipBytes((metadata[imageIndex].getAxisLength(Axes.Y) - y - h).i * rowLen)
                 }
             }
         } else {
-            val scanlineWidth = metadata.get(imageIndex).getAxisLength(
-                Axes.X) as Int + scanlinePad
-            if (metadata.get(imageIndex).getInterleavedAxisCount() > 0) {
+            val scanlineWidth: Int = metadata[imageIndex].getAxisLength(Axes.X).i + scanlinePad
+            if (SCIFIOMetadataTools.countInterleavedAxes(metadata, imageIndex) > 0) {
                 var blockProduct = bpp.toLong()
-                for (i in bounds.dimensions) {
-                    if (i != xIndex && i != yIndex) blockProduct *= metadata.get(
-                        imageIndex).getAxisLength(i)
-                }
-                var bytesToSkip = scanlineWidth * blockProduct.toInt()
-                s.skipBytes(bounds.min(yIndex) as Int * bytesToSkip)
+                for (i in range.dimensions)
+                    if (i != xIndex && i != yIndex) blockProduct *= metadata[imageIndex].getAxisLength(i)
+                var bytesToSkip = scanlineWidth * blockProduct.i
+                s.skipBytes(range.min(yIndex).i * bytesToSkip)
 
                 bytesToSkip = bpp
                 var bytesToRead = bytesToSkip
-                bytesToRead *= bounds.max(xIndex)
-                bytesToRead *= blockProduct.toInt()
-                bytesToSkip *= bounds.min(xIndex)
-                bytesToSkip *= blockProduct.toInt()
+                bytesToRead *= range.dimension(xIndex).i
+                bytesToRead *= blockProduct.i
+                bytesToSkip *= range.min(xIndex).i
+                bytesToSkip *= blockProduct.i
 
-                for (row in 0..bounds.max(yIndex)) {
+                for (row in 0..range.dimension(yIndex)) {
                     s.skipBytes(bytesToSkip)
                     s.read(bytes, row * bytesToRead, bytesToRead)
-                    if (row < bounds.max(yIndex)) {
+                    if (row < range.dimension(yIndex))
                         // no need to skip bytes after reading final row
-                        s.skipBytes((blockProduct * (scanlineWidth - bounds.dimension(
-                            xIndex))) as Int)
-                    }
+
+                    // no need to skip bytes after reading final row
+                        s.skipBytes((blockProduct * (scanlineWidth -
+                                range.dimension(xIndex) - range.min(xIndex))).i) // FIXME or just range.dimension??
                 }
             } else {
-                val c: Long = metadata.get(imageIndex).getAxisLength(Axes.CHANNEL)
+                val c: Long = metadata[imageIndex].getAxisLength(Axes.CHANNEL)
 
-                val w = bounds.max(xIndex) as Int
-                val h = bounds.max(yIndex) as Int
-                val x = bounds.min(xIndex) as Int
-                val y = bounds.min(yIndex) as Int
-                for (channel in 0 until c) {
+                val w = range.dimension(xIndex).i
+                val h = range.dimension(yIndex).i
+                val x = range.min(xIndex).i
+                val y = range.min(yIndex).i
+                for (channel in 0..<c) {
                     s.skipBytes(y * scanlineWidth * bpp)
                     for (row in 0 until h) {
                         s.skipBytes(x * bpp)
@@ -319,11 +313,9 @@ abstract class AbstractReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlo
                             s.skipBytes(bpp * (scanlineWidth - w - x))
                         }
                     }
-                    if (channel < c - 1) {
+                    if (channel < c - 1)
                         // no need to skip bytes after reading final channel
-                        s.skipBytes(scanlineWidth * bpp * (metadata.get(imageIndex)
-                                .getAxisLength(Axes.Y) - y - h) as Int)
-                    }
+                        s.skipBytes(scanlineWidth * bpp * (metadata[imageIndex].getAxisLength(Axes.Y) - y - h).i)
                 }
             }
         }
