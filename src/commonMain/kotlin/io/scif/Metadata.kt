@@ -98,10 +98,10 @@ interface Metadata: /*java.io.Serializable,*/ HasFormat, HasSource {
     var isFiltered: Boolean
 
     /**
-     * Generates format-agnostic image metadata structures based on this
-     * instance's format-specific metadata.
+     * Clears all format-agnostic metadata, causing it to be re-generated next
+     * time it's requested.
      */
-    fun populateImageMetadata()
+    fun clearImageMetadata()
 
     // -- Format-agnostic Metadata API Methods --
     /** Returns a String representation of this Dataset's name  */
@@ -127,12 +127,5 @@ interface Metadata: /*java.io.Serializable,*/ HasFormat, HasSource {
     /**
      * Adds the provided image metadata to this dataset metadata
      */
-//    fun add(meta: ImageMetadata?)
-
-    /**
-     * Creates the specified number of blank ImageMetadata.
-     *
-     * @param imageCount - Number of ImageMetadata to create.
-     */
-    fun createImageMetadata(imageCount: Int)
+    fun add(meta: ImageMetadata)
 }

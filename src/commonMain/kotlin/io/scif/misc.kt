@@ -49,9 +49,6 @@ class DefaultMetadata : AbstractMetadata, DefaultComponent {
     constructor(copy: Metadata) : super(copy)
 
     constructor(list: List<ImageMetadata>) : super(list)
-
-    // -- Metadata API methods --
-    fun populateImageMetadata() {}
 }
 
 /**

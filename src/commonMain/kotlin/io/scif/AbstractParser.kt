@@ -28,6 +28,8 @@
  */
 package io.scif
 
+import io.scif.config.SCIFIOConfig
+
 //import io.scif.config.SCIFIOConfig
 //import io.scif.util.SCIFIOMetadataTools
 //import org.scijava.io.handle.DataHandle
@@ -138,6 +140,9 @@ abstract class AbstractParser<M : TypedMetadata> : AbstractGroupable(), TypedPar
 //    @Throws(java.io.IOException::class, FormatException::class) fun parse(handle: DataHandle<Location?>?, meta: M): M {
 //        return parse(handle, meta, SCIFIOConfig())
 //    }
+
+
+    // [Kotlin] these two comes from `master`
 //
 //    @Throws(java.io.IOException::class, FormatException::class) fun parse(loc: Location, meta: M, config: SCIFIOConfig): M {
 //        var handle: DataHandle<Location?>? = source
@@ -199,6 +204,36 @@ abstract class AbstractParser<M : TypedMetadata> : AbstractGroupable(), TypedPar
 //        return meta
 //    }
 
+    // [Kotlin] this from `blocks-are-so-planes`
+
+//    @Throws(java.io.IOException::class, FormatException::class) fun parse(stream: RandomAccessInputStream, meta: M,
+//                                                                          config: SCIFIOConfig): M {
+//        val `in`: RandomAccessInputStream = getSource()
+//
+//        if (`in` == null || !`in`.getFileName().equals(stream.getFileName())) {
+//            init(stream)
+//
+//            if (config.parserIsSaveOriginalMetadata()) {
+//                // TODO store all metadata in OMEXML store..
+//                // or equivalent function? as per setId.. or handle via
+//                // annotations
+//            }
+//        }
+//
+//        // TODO relying on Abstract-level API
+//        meta.isFiltered = config.parserIsFiltered()
+//        if (meta.getContext() == null) metadata.setContext(getContext())
+//        meta.setSource(stream)
+//        meta.datasetName = stream.getFileName()
+//
+//        metadata = meta
+//        typedParse(stream, meta, config)
+//
+//        meta.clearImageMetadata()
+//
+//        return meta
+//    }
+
     // -- HasSource API Methods --
 //    @Throws(java.io.IOException::class) fun close(fileOnly: Boolean) {
 //        if (metadata != null) metadata.close(fileOnly)
@@ -208,7 +243,7 @@ abstract class AbstractParser<M : TypedMetadata> : AbstractGroupable(), TypedPar
     /**
      * A helper method, called by [.parse].
      * Allows for boilerplate code to come after parsing, specifically calls to
-     * [Metadata.populateImageMetadata].
+     * [Metadata.clearImageMetadata].
      *
      *
      * This method should be implemented to populate any format-specific Metadata.
