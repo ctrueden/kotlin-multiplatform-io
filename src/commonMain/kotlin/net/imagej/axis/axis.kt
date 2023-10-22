@@ -30,6 +30,8 @@ package net.imagej.axis
 
 //import net.imagej.space.AnnotatedSpace
 import net.imglib2.EuclideanSpace
+import kotlin.jvm.JvmOverloads
+
 //import net.imagej.space.TypedSpace
 
 /**
@@ -68,3 +70,40 @@ interface AxisType {
     val isXY: Boolean
     val isSpatial: Boolean
 }
+
+
+/**
+ * IdentityAxis is a [CalibratedAxis] whose raw and calibrated values are
+ * the same.
+ *
+ * @author Barry DeZonia
+ */
+class IdentityAxis : VariableAxis {
+    /** Constructs an IdentityAxis of the specified axis type.  */ // -- constructors --
+    /** Constructs a default IdentityAxis of unknown axis type.  */
+    @JvmOverloads
+    constructor(type: AxisType = Axes.unknown()) : super(type)
+
+    /** Constructs an IdentityAxis of the specified axis type and unit.  */
+    constructor(type: AxisType, unit: String?) : super(type, unit)
+
+    // -- CalibratedAxis methods --
+    override fun calibratedValue(rawValue: Double): Double = rawValue
+
+    override fun rawValue(calibratedValue: Double): Double = calibratedValue
+
+    override fun generalEquation(): String = "y = x"
+
+    override fun copy(): IdentityAxis {
+        return IdentityAxis(type, unit())
+    }
+}
+
+/**
+ * Default implementation of [TypedAxis].
+ *
+ * @author Curtis Rueden
+ */
+open class DefaultTypedAxis
+@JvmOverloads
+constructor(override var type: AxisType = Axes.unknown()) : TypedAxis

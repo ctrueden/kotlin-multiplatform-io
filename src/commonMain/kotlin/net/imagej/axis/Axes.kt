@@ -1,0 +1,133 @@
+/*
+ * #%L
+ * ImageJ2 software for multidimensional image processing and analysis.
+ * %%
+ * Copyright (C) 2009 - 2023 ImageJ2 developers.
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+package net.imagej.axis
+
+import kotlin.jvm.JvmOverloads
+
+/**
+ * An extensible enumeration of dimensional [AxisType]s. Provides a core
+ * set ([.X], [.Y], [.Z], [.TIME] and [.CHANNEL])
+ * of axis types. The [.get] methods can be used to create new, custom
+ * axis types which will be cached for future use.
+ *
+ * @author Curtis Rueden
+ * @author Mark Hiner
+ */
+object Axes {
+    // -- Constants --
+    /** Label for unknown axis types, which are returned by [.unknown].  */
+    const val UNKNOWN_LABEL: String = "Unknown"
+
+    // -- Fields --
+    /**
+     * Table of existing AxisTypes
+     */
+    private val axes: HashMap<String, AxisType> = HashMap()
+
+    // -- Core axes constants --
+    /**
+     * Identifies the *X* dimensional type, representing a dimension in the
+     * first (X) spatial dimension.
+     */
+    val X: AxisType = get("X", true)
+
+    /**
+     * Identifies the *Y* dimensional type, representing a dimension in the
+     * second (Y) spatial dimension.
+     */
+    val Y: AxisType = get("Y", true)
+
+    /**
+     * Identifies the *Z* dimensional type, representing a dimension in the
+     * third (Z) spatial dimension.
+     */
+    val Z: AxisType = get("Z", true)
+
+    /**
+     * Identifies the *Time* dimensional type, representing a dimension
+     * consisting of time points.
+     */
+    val TIME: AxisType = get("Time")
+
+    /**
+     * Identifies the *Channel* dimensional type, representing a generic
+     * channel dimension.
+     */
+    val CHANNEL: AxisType = get("Channel")
+
+    /**
+     * Accessor for an AxisType of the given label. Creates and caches the
+     * AxisType with the given label and spatial flag if it does not already
+     * exist.
+     */
+    // -- Static utility methods --
+    /**
+     * Accessor for an AxisType of the given label. Creates and caches the
+     * AxisType as a non-spatial axis if it does not already exist.
+     */
+    @JvmOverloads
+    fun get(label: String, spatial: Boolean = false): AxisType {
+        if (UNKNOWN_LABEL == label) return unknown()
+
+        var axis: AxisType? = axes[label]
+
+        // if the axis is null, create it
+        if (axis == null) {
+            // synchronized to ensure the axis is only created once
+            // TODO [Kotlin]
+//            synchronized(axes) {
+                // see if another thread already created our axis
+                axis = axes[label]
+                // if not, create and store it
+                if (axis == null) {
+                    axis = DefaultAxisType(label, spatial)
+                    axes[label] = axis
+                }
+//            }
+        }
+        return axis
+    }
+
+    /**
+     * @return an array of `AxisType`s corresponding to all currently
+     * defined axes.
+     */
+    val knownTypes: Array<AxisType>
+        get() = axes.values.toTypedArray<AxisType>()
+
+    /**
+     * Gets an "unknown" axis type.
+     *
+     *
+     * Always returns a new object, which is not part of the extended enumeration.
+     * In this way, two unknown axis types are never equal.
+     *
+     */
+    fun unknown(): AxisType = DefaultAxisType(UNKNOWN_LABEL)
+}

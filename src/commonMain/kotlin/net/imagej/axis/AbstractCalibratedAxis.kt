@@ -29,50 +29,23 @@
 package net.imagej.axis
 
 /**
- * An axis with an associated [AxisType], unit and calibration.
+ * Abstract base class for [CalibratedAxis].
  *
- * @author Curtis Rueden
  * @author Barry DeZonia
- * @see TypedAxis
  */
-interface CalibratedAxis : TypedAxis {
-    /** The dimension's unit.  */
-    var unit: String?
+abstract class AbstractCalibratedAxis(type: AxisType, var unit: String? = null) : DefaultTypedAxis(type), CalibratedAxis {
+    override fun averageScale(rawValue1: Double, rawValue2: Double): Double =
+        (calibratedValue(rawValue2) - calibratedValue(rawValue1)) / (rawValue2 - rawValue1)
 
-    /** Returns a calibrated value given a raw position along the axis.  */
-    fun calibratedValue(rawValue: Double): Double
+    // -- Object methods --
+    override fun hashCode(): Int = hashString(this).hashCode()
 
-    /**
-     * Returns a raw value given a calibrated position along the axis. Returns
-     * Double.NaN if the calibrated value maps to more than one point along axis.
-     */
-    fun rawValue(calibratedValue: Double): Double
+    override fun equals(other: Any?): Boolean = other is CalibratedAxis && hashString(this) == hashString(other)
 
-    /**
-     * Gets the general equation representing values along this axis; for
-     * instance: `y = m*x + b`.
-     */
-    fun generalEquation(): String
-
-    /**
-     * Gets the particular equation representing values along this axis; for
-     * instance: `y = (14)*x + (4)`.
-     */
-    fun particularEquation(): String
-
-    /**
-     * Returns the average scale between two raw value coordinates along an axis.
-     *
-     *
-     * In the limit this is actually the derivative at a point. For linear axes
-     * this value never varies, and there is no error. For nonlinear axes this
-     * returns the linear scale between the points and thus may be inaccurate.
-     * Calls to this method may point out areas of code that should be generalized
-     * to work with nonlinear axes.
-     *
-     */
-    fun averageScale(rawValue1: Double, rawValue2: Double): Double
-
-    /** Creates an exact duplicate of this axis.  */
-    fun copy(): CalibratedAxis
+    // -- Helper methods --
+    /** Computes a likely-to-be-unique string for this axis.  */
+    private fun hashString(axis: CalibratedAxis): String =
+        axis.type.hashCode().toString() + "\n" +  //
+                axis.unit() + "\n" +  //
+                axis.particularEquation()
 }
