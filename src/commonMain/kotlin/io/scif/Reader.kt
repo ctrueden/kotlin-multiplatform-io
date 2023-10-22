@@ -141,8 +141,52 @@ interface Reader : HasFormat, HasSource, Groupable {
     @Throws(FormatException::class, IOException::class)
     fun openBlock(imageIndex: Int, blockIndex: Long, block: Block, bounds: Interval, config: SCIFIOConfig): Block
 
+    /**
+     * Creates a [io.scif.Block] representation of a desired sub-region from
+     * the pixels at the specified indices.
+     *
+     * @param imageIndex the image index within the dataset.
+     * @param pos starting position (offsets) of the range to open
+     * @param range the extents of the range to open
+     * @return The desired sub-region at the specified indices.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval): Block
+
+    /**
+     * Allows a single `Block` object to be reused by reference when opening
+     * sub-regions of blocks.
+     *
+     * @see .openRegion
+     * @throws IllegalArgumentException If the provided `Block` type is not
+     * compatible with this `Reader`.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block): Block
+
+    /**
+     * As [.openRegion] with configuration options.
+     *
+     * @see .openRegion
+     * @return The desired sub-region at the specified indices.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, config: SCIFIOConfig): Block
+
+    /**
+     * Allows a single `Block` object to be reused by reference when opening
+     * sub-regions of blocks.
+     *
+     * @see .openRegion
+     * @throws IllegalArgumentException If the provided `Block` type is not
+     * compatible with this `Reader`.
+     */
+    @Throws(FormatException::class, IOException::class)
+    fun openRegion(imageIndex: Int, pos: Interval, range: Interval, block: Block, config: SCIFIOConfig): Block
+
+
     /** Returns the current file.  */
-//    val currentLocation: Location?
+    //    val currentLocation: Location?
 
     /** Returns the list of domains represented by the current file.  */
     val domains: Array<String?>?
@@ -152,13 +196,10 @@ interface Reader : HasFormat, HasSource, Groupable {
      *
      * @return A RandomAccessInputStream
      */
-//    val handle: DataHandle<Location?>?
+    //    val handle: DataHandle<Location?>?
 
-    /** Returns the optimal sub-image width for use with [.openBlock].  */
-    fun getOptimalTileWidth(imageIndex: Int): Long
-
-    /** Returns the optimal sub-image height for use with [.openBlock].  */
-    fun getOptimalTileHeight(imageIndex: Int): Long
+    /** Returns the optimal sub-image extents for use with [.openBlock].  */
+    fun getOptimalBlockSize(imageIndex: Int): Interval
 
     /** Gets the type-specific Metadata for this Reader  */
     @set:Throws(IOException::class)
@@ -179,14 +220,14 @@ interface Reader : HasFormat, HasSource, Groupable {
      * @param loc the location
      * @throws IOException
      */
-//    @Throws(java.io.IOException::class) fun setSource(loc: Location?)
+    //    @Throws(java.io.IOException::class) fun setSource(loc: Location?)
 
     /**
      * Sets the source for this reader to read from.
      *
      * @param stream - The stream to read from
      */
-//    @Throws(java.io.IOException::class) fun setSource(stream: DataHandle<Location?>?)
+    //    @Throws(java.io.IOException::class) fun setSource(stream: DataHandle<Location?>?)
 
     /**
      * As [.setSource] with configuration options.
@@ -195,7 +236,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * @param config Configuration information to use for this read.
      * @throws IOException
      */
-//    @Throws(java.io.IOException::class) fun setSource(loc: Location?, config: SCIFIOConfig?)
+    //    @Throws(java.io.IOException::class) fun setSource(loc: Location?, config: SCIFIOConfig?)
 
     /**
      * As [.setSource] with configuration options.
@@ -204,7 +245,7 @@ interface Reader : HasFormat, HasSource, Groupable {
      * @param config Configuration information to use for this read.
      * @throws IOException
      */
-//    @Throws(java.io.IOException::class) fun setSource(handle: DataHandle<Location?>?, config: SCIFIOConfig?)
+    //    @Throws(java.io.IOException::class) fun setSource(handle: DataHandle<Location?>?, config: SCIFIOConfig?)
 
     /**
      * Reads a raw block from disk.
@@ -239,19 +280,11 @@ interface Reader : HasFormat, HasSource, Groupable {
     /**
      * Creates a blank block compatible with this reader.
      *
-     * @param bounds bounds of the planar axes.
-     * @return The created block
-     */
-    fun createBlock(bounds: Interval): Block
-
-    /**
-     * Creates a blank block compatible with this reader.
+     * @param extents The extents of the new block
      *
-     * @param meta - ImageMetadata to use to populate the new block.
-     * @param bounds bounds of the planar axes.
      * @return The created block
      */
-    fun createBlock(meta: ImageMetadata, bounds: Interval): Block
+    fun createBlock(extents: Interval): Block
 
     /**
      * Convenience method for casting `Block` implementations to the type
