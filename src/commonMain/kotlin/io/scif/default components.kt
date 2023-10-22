@@ -1,6 +1,8 @@
 package io.scif
 
+import net.imagej.axis.CalibratedAxis
 import net.imglib2.Dimensions
+import net.imglib2.Interval
 import okio.IOException
 
 /**
@@ -40,9 +42,37 @@ class DefaultChecker : AbstractChecker(), DefaultComponent {
  */
 class DefaultImageMetadata : AbstractImageMetadata {
     // -- Constructors --
-    constructor() : super()
+    constructor(n: Int) : super(n)
 
-    constructor(copy: ImageMetadata) : super(copy)
+    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
+
+    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
+
+    constructor(interval: Interval) : super(interval)
+
+    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
+
+    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
+
+    constructor(dimensions: Dimensions) : super(dimensions)
+
+    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+
+    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
+
+    constructor(dimensions: LongArray) : super(dimensions)
+
+    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+
+    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
+
+    constructor(min: LongArray, max: LongArray) : super(min, max)
+
+    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
+
+    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
+
+    constructor(source: ImageMetadata) : super(source)
 
     // -- ImageMetadata API Methods --
     override fun copy(): ImageMetadata = DefaultImageMetadata(this)
@@ -148,10 +178,18 @@ class DefaultWriter : AbstractWriter<DefaultMetadata?>(), DefaultComponent {
 }
 
 
-class DefaultBlock<T : NativeType<T>?, A> : TypedBlock<T, A> {
-    override var offsets: Dimensions? = null
+class DefaultBlock<T> : TypedBlock<T> {
+    private var offsets: Dimensions? = null
 
-    override val interval: ArrayImg<T, A>?
+    override val interval: Interval?
+        get() = offsets
+
+    fun setOffsets(offsets: Dimensions?) {
+        this.offsets = offsets
+    }
+
+    override fun get(): T? {
         // TODO Auto-generated method stub
-        get() = null
+        return null
+    }
 }
