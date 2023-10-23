@@ -39,9 +39,15 @@ import okio.IOException
  * @author Mark Hiner
  */
 class DefaultMetadata : AbstractMetadata, DefaultComponent {
+
+
+    // -- AbstractImageMetadata API Methods --
+    override fun generateImageMetadata(imageIndex: Int): ImageMetadata? = null
+
     // -- HasFormat API Methods --
+
     // -- Fields --
-    val format: Format?
+    override val format: Format? = null
 
     // -- Constructors --
     constructor() : super()
@@ -49,6 +55,10 @@ class DefaultMetadata : AbstractMetadata, DefaultComponent {
     constructor(copy: Metadata) : super(copy)
 
     constructor(list: List<ImageMetadata>) : super(list)
+
+    override fun close() {
+        TODO("Not yet implemented")
+    }
 }
 
 /**
@@ -156,7 +166,7 @@ interface MetaTable : MutableMap<String, Any> {
      * @param key - Key to a list of values
      * @param value - Value to add to the list
      */
-    fun putList(key: String?, value: Any?)
+    fun putList(key: String, value: Any)
 }
 
 /**
@@ -278,16 +288,16 @@ interface DataPlane<T> /*: Plane*/ {
  * @author Mark Hiner
  * @param <M> - The Metadata type required by this Reader.
 </M> */
-abstract class ByteArrayReader<M : TypedMetadata> : AbstractReader<M, ByteArrayPlane>(ByteArrayPlane::class) {
+abstract class ByteArrayReader<M : TypedMetadata> /*: AbstractReader<M, ByteArrayPlane>(ByteArrayPlane::class)*/ {
     // -- Reader API Methods --
-    fun createPlane(bounds: Interval?): ByteArrayPlane {
-        return createPlane(getMetadata().get(0), bounds)
-    }
-
-    fun createPlane(meta: ImageMetadata?,
-                    bounds: Interval?): ByteArrayPlane {
-        return ByteArrayPlane(meta, bounds)
-    }
+//    fun createPlane(bounds: Interval): ByteArrayPlane {
+//        return createPlane(getMetadata().get(0), bounds)
+//    }
+//
+//    fun createPlane(meta: ImageMetadata?,
+//                    bounds: Interval?): ByteArrayPlane {
+//        return ByteArrayPlane(meta, bounds)
+//    }
 }
 
 enum class MetadataLevel { MINIMUM, NO_OVERLAYS, ALL }

@@ -39,7 +39,7 @@ import net.imagej.axis.CalibratedAxis
  *
  * @author Mark Hiner
  */
-interface ImageMetadata : CalibratedInterval<CalibratedAxis>, Named, HasMetaTable {
+interface ImageMetadata : /*CalibratedInterval<CalibratedAxis>,*/ Named, HasMetaTable {
 
     // getInterval
 

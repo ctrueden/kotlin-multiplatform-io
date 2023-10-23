@@ -78,14 +78,11 @@ interface AxisType {
  *
  * @author Barry DeZonia
  */
-class IdentityAxis : VariableAxis {
-    /** Constructs an IdentityAxis of the specified axis type.  */ // -- constructors --
-    /** Constructs a default IdentityAxis of unknown axis type.  */
-    @JvmOverloads
-    constructor(type: AxisType = Axes.unknown()) : super(type)
-
-    /** Constructs an IdentityAxis of the specified axis type and unit.  */
-    constructor(type: AxisType, unit: String?) : super(type, unit)
+class IdentityAxis
+/** Constructs an IdentityAxis of the specified axis type and unit.  */
+@JvmOverloads
+constructor(type: AxisType = Axes.unknown(), unit: String? = null) : VariableAxis(type, unit) {
+    // -- constructors --
 
     // -- CalibratedAxis methods --
     override fun calibratedValue(rawValue: Double): Double = rawValue
@@ -94,9 +91,7 @@ class IdentityAxis : VariableAxis {
 
     override fun generalEquation(): String = "y = x"
 
-    override fun copy(): IdentityAxis {
-        return IdentityAxis(type, unit())
-    }
+    override fun copy(): IdentityAxis = IdentityAxis(type, unit)
 }
 
 /**

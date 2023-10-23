@@ -42,40 +42,42 @@ class DefaultChecker : AbstractChecker(), DefaultComponent {
  */
 class DefaultImageMetadata : AbstractImageMetadata {
     // -- Constructors --
-    constructor(n: Int) : super(n)
-
-    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
-
-    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
-
-    constructor(interval: Interval) : super(interval)
-
-    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
-
-    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
-
-    constructor(dimensions: Dimensions) : super(dimensions)
-
-    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, *axes)
-
-    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
-
-    constructor(dimensions: LongArray) : super(dimensions)
-
-    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
-
-    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
-
-    constructor(min: LongArray, max: LongArray) : super(min, max)
-
-    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
-
-    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
-
-    constructor(source: ImageMetadata) : super(source)
+//    constructor(n: Int) : super(n)
+//
+//    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
+//
+//    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
+//
+//    constructor(interval: Interval) : super(interval)
+//
+//    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
+//
+//    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
+//
+//    constructor(dimensions: Dimensions) : super(dimensions)
+//
+//    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+//
+//    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
+//
+//    constructor(dimensions: LongArray) : super(dimensions)
+//
+//    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+//
+//    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
+//
+//    constructor(min: LongArray, max: LongArray) : super(min, max)
+//
+//    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
+//
+//    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
+//
+    constructor(source: ImageMetadata)// : super(source)
 
     // -- ImageMetadata API Methods --
     override fun copy(): ImageMetadata = DefaultImageMetadata(this)
+
+    override var table: MetaTable? = null
 }
 
 /**
@@ -103,10 +105,22 @@ class DefaultParser : AbstractParser<DefaultMetadata>(), DefaultComponent {
     /*
 	 * Non-functional typedParse implementation.
 	 */
-//    @Throws(IOException::class, FormatException::class) protected fun typedParse(stream: DataHandle<Location?>?,
-//                                                                                 meta: DefaultMetadata?, config: SCIFIOConfig?) {
-        // No implementation
-//    }
+    //    @Throws(IOException::class, FormatException::class) protected fun typedParse(stream: DataHandle<Location?>?,
+    //                                                                                 meta: DefaultMetadata?, config: SCIFIOConfig?) {
+    // No implementation
+    //    }
+
+    override val usedFiles: Array<Any?>?
+        get() = TODO("Not yet implemented")
+    override val supportedMetadataLevels: Set<Any?>?
+        get() = TODO("Not yet implemented")
+    override fun close() {
+        TODO("Not yet implemented")
+    }
+
+    override fun close(fileOnly: Boolean) {
+        TODO("Not yet implemented")
+    }
 }
 
 /**
@@ -125,9 +139,7 @@ class DefaultReader : ByteArrayReader<DefaultMetadata>(), DefaultComponent {
     val format: Format? = null
 
     // -- AbstractReader API Methods --
-    protected fun createDomainArray(): Array<String?> {
-        return arrayOfNulls(0)
-    }
+    protected fun createDomainArray(): Array<String?> = arrayOfNulls(0)
 
     // -- Reader API Methods --
     /**
@@ -135,13 +147,14 @@ class DefaultReader : ByteArrayReader<DefaultMetadata>(), DefaultComponent {
      *
      * @throws UnsupportedOperationException
      */
-    @Throws(FormatException::class, java.io.IOException::class) fun openPlane(imageIndex: Int, planeIndex: Long,
-                                                                              plane: ByteArrayPlane?, bounds: Interval?,
-                                                                              config: SCIFIOConfig?): ByteArrayPlane {
-        throw java.lang.UnsupportedOperationException(
-            "Trying to read using DefaultReader. " +
-                    "Must implement a Reader specifically for this Format")
-    }
+//    @Throws(FormatException::class, IOException::class)
+//    fun openPlane(imageIndex: Int, planeIndex: Long,
+//                  plane: ByteArrayPlane?, bounds: Interval?,
+//                  config: SCIFIOConfig?): ByteArrayPlane {
+//        throw java.lang.UnsupportedOperationException(
+//            "Trying to read using DefaultReader. " +
+//                    "Must implement a Reader specifically for this Format")
+//    }
 }
 
 /**
@@ -154,10 +167,10 @@ class DefaultReader : ByteArrayReader<DefaultMetadata>(), DefaultComponent {
  *
  * @author Mark Hiner
  */
-class DefaultWriter : AbstractWriter<DefaultMetadata?>(), DefaultComponent {
+class DefaultWriter : AbstractWriter<DefaultMetadata>(), DefaultComponent {
     // -- HasFormat API methods --
     // -- Fields --
-    val format: Format? = null
+    override val format: Format? = null
 
     // -- Writer API Methods --
     /**
@@ -165,31 +178,17 @@ class DefaultWriter : AbstractWriter<DefaultMetadata?>(), DefaultComponent {
      *
      * @throws UnsupportedOperationException
      */
-    @Throws(FormatException::class, java.io.IOException::class) protected fun writePlane(imageIndex: Int, planeIndex: Long,
-                                                                                         plane: Plane?, bounds: Interval?) {
-        throw java.lang.UnsupportedOperationException(
-            "Trying to write using DefaultWriter. " +
-                    "Must implement a Writer specifically for this Format")
-    }
+//    @Throws(FormatException::class, IOException::class)
+//    protected fun writePlane(imageIndex: Int, planeIndex: Long,
+//                                                                                         plane: Plane?, bounds: Interval?) {
+//        throw java.lang.UnsupportedOperationException(
+//            "Trying to write using DefaultWriter. " +
+//                    "Must implement a Writer specifically for this Format")
+//    }
 
-    protected fun makeCompressionTypes(): Array<String?> {
-        return arrayOfNulls(0)
-    }
-}
+    override fun makeCompressionTypes(): Array<String> = emptyArray()
 
-
-class DefaultBlock<T> : TypedBlock<T> {
-    private var offsets: Dimensions? = null
-
-    override val interval: Interval?
-        get() = offsets
-
-    fun setOffsets(offsets: Dimensions?) {
-        this.offsets = offsets
-    }
-
-    override fun get(): T? {
-        // TODO Auto-generated method stub
-        return null
+    override fun close() {
+        TODO("Not yet implemented")
     }
 }

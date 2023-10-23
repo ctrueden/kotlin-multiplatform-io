@@ -47,7 +47,7 @@ package io.scif
  *
  * @see io.scif.AbstractFormat
  */
-interface Metadata: /*java.io.Serializable,*/ HasFormat, HasSource {
+interface Metadata: /*java.io.Serializable,*/ HasFormat, HasSource, HasMetaTable {
     // -- Metadata API --
 
     /**
@@ -110,13 +110,13 @@ interface Metadata: /*java.io.Serializable,*/ HasFormat, HasSource {
      *
      * @param name - the dataset name
      */
-    var datasetName: String
+    var datasetName: String?
 
     /** Returns the ImageMetadata at the specified image within this dataset.  */
     operator fun get(imageIndex: Int): ImageMetadata
 
     /** Returns the list of ImageMetadata associated with this dataset.  */
-    val all: List<Any>
+    val all: List<ImageMetadata?>
 
     /** Returns the number of images in this dataset.  */
     val imageCount: Int

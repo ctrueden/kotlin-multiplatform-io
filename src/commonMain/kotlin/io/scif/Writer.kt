@@ -28,6 +28,8 @@
  */
 package io.scif
 
+import platform.FormatException
+
 //import io.scif.codec.CodecOptions
 //import io.scif.config.SCIFIOConfig
 //import net.imglib2.Interval
@@ -87,7 +89,7 @@ interface Writer : HasFormat, HasSource {
      *
      * @return The `Metadata` associated with this `Writer`.
      */
-    @set:Throws(FormatException::class)
+//    @set:Throws(FormatException::class)
     var metadata: Metadata
 
     /**
@@ -180,16 +182,17 @@ interface Writer : HasFormat, HasSource {
 //    var colorModel: java.awt.image.ColorModel?
 
     /** Gets the available compression types.  */
-    val compressionTypes: Array<String?>?
+    val compressionTypes: Array<String>
 
     /** Gets the supported pixel types for the given codec.  */
-    fun getPixelTypes(codec: String?): IntArray?
+    fun getPixelTypes(codec: String): IntArray
 
     /** Checks if the given pixel type is supported.  */
-    fun isSupportedType(type: Int, codec: String?): Boolean
+    fun isSupportedType(type: Int, codec: String): Boolean
 
     /** Checks if the given compression type is supported.  */
-    @Throws(FormatException::class) fun isSupportedCompression(compress: String?)
+    @Throws(FormatException::class)
+    fun isSupportedCompression(compress: String)
 
     /**
      * @return True iff this writer is prepared to write the given plane of the
@@ -216,7 +219,7 @@ interface Writer : HasFormat, HasSource {
     /**
      * @return True if this writer should output planes sequentially.
      */
-    fun writeSequential(): Boolean
+    val writeSequential: Boolean
 
     /**
      * @return Number of valid bits per pixel.

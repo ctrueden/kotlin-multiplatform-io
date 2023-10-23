@@ -33,8 +33,6 @@
  */
 package net.imglib2
 
-import net.imglib2.exception.InvalidDimensionsException
-
 //import net.imglib2.exception.InvalidDimensionsException
 
 /**

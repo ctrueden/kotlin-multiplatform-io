@@ -76,3 +76,17 @@ interface CalibratedAxis : TypedAxis {
     /** Creates an exact duplicate of this axis.  */
     fun copy(): CalibratedAxis
 }
+
+/**
+ * A [CalibratedAxis] that scales coordinates along the axis in a linear
+ * fashion. Slope and intercept are configurable. Calibrated values calculated
+ * from equation `y = a + b *x`.
+ *
+ * @author Barry DeZonia
+ * @author Curtis Rueden
+ */
+interface LinearAxis : CalibratedAxis {
+    var scale: Double?
+    var origin: Double?
+    override fun copy(): LinearAxis
+}

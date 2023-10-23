@@ -50,7 +50,7 @@ import uns.L
  *
  * @author Mark Hiner
  */
-abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis>, ImageMetadata {
+abstract class AbstractImageMetadata : /*AbstractCalibratedInterval<CalibratedAxis>,*/ ImageMetadata {
 
     // -- Fields --
 
@@ -72,6 +72,10 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     /** Number of valid bits per pixel.  */
     @Field("bitsPerPixel")
     override var bitsPerPixel: Int = 0
+        get() = when {
+            field <= 0 -> FormatTools.getBitsPerPixel(pixelType)
+            else -> field
+        }
 
     /**
      * Indicates whether or not we are confident that the dimension order is
@@ -125,48 +129,48 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     // -- Constructors --
 
     // -- Constructors --
-    constructor(n: Int) : super(n)
-
-    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
-
-    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
-
-    constructor(interval: Interval) : super(interval)
-
-    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
-
-    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
-
-    constructor(dimensions: Dimensions) : super(dimensions)
-
-    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, axes)
-
-    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
-
-    constructor(dimensions: LongArray) : super(dimensions)
-
-    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
-
-    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
-
-    constructor(min: LongArray, max: LongArray) : super(min, max)
-
-    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
-
-    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
-
-    constructor(source: ImageMetadata) : super(source) {
-        copy(source)
-    }
+    //    constructor(n: Int) : super(n)
+    //
+    //    constructor(n: Int, vararg axes: CalibratedAxis) : super(n, *axes)
+    //
+    //    constructor(n: Int, axes: List<CalibratedAxis>) : super(n, axes)
+    //
+    //    constructor(interval: Interval) : super(interval)
+    //
+    //    constructor(interval: Interval, vararg axes: CalibratedAxis) : super(interval, *axes)
+    //
+    //    constructor(interval: Interval, axes: List<CalibratedAxis>) : super(interval, axes)
+    //
+    //    constructor(dimensions: Dimensions) : super(dimensions)
+    //
+    //    constructor(dimensions: Dimensions, vararg axes: CalibratedAxis) : super(dimensions, axes)
+    //
+    //    constructor(dimensions: Dimensions, axes: List<CalibratedAxis>) : super(dimensions, axes)
+    //
+    //    constructor(dimensions: LongArray) : super(dimensions)
+    //
+    //    constructor(dimensions: LongArray, vararg axes: CalibratedAxis) : super(dimensions, *axes)
+    //
+    //    constructor(dimensions: LongArray, axes: List<CalibratedAxis>) : super(dimensions, axes)
+    //
+    //    constructor(min: LongArray, max: LongArray) : super(min, max)
+    //
+    //    constructor(min: LongArray, max: LongArray, vararg axes: CalibratedAxis) : super(min, max, *axes)
+    //
+    //    constructor(min: LongArray, max: LongArray, axes: List<CalibratedAxis>) : super(min, max, axes)
+    //
+    //    constructor(source: ImageMetadata) : super(source) {
+    //        copy(source)
+    //    }
 
     override val size: Long
         // -- Getters --
         get() {
             var size: Long = 1
-
-            for (i in 0 until numDimensions) {
-                size = DataTools.safeMultiply64(size, dimension(i))
-            }
+            TODO()
+            //            for (i in 0 until numDimensions) {
+            //                size = DataTools.safeMultiply64(size, dimension(i))
+            //            }
 
             val bytesPerPixel = bitsPerPixel / 8
 
@@ -179,8 +183,8 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     //        // If the X thumbSize isn't explicitly set, scale the actual width using
     //        // the thumbnail dimension constant
     //        if (thumbX == 0L) {
-//                  val sx: Long = dimension(Axes.X)
-//                  val sy: Long = dimension(Axes.Y)
+    //                  val sx: Long = dimension(Axes.X)
+    //                  val sy: Long = dimension(Axes.Y)
     //
     //            if (sx < THUMBNAIL_DIMENSION && sy < THUMBNAIL_DIMENSION) thumbX = sx
     //            else if (sx > sy) thumbX = THUMBNAIL_DIMENSION
@@ -210,11 +214,6 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     //        return thumbY
     //    }
     //
-    override var bitsPerPixel: Int = 0
-        get() {
-            if (bitsPerPixel <= 0) return FormatTools.getBitsPerPixel(pixelType)
-            return bitsPerPixel
-        }
 
     //    override fun getAxes(): List<CalibratedAxis>? {
     //        return getEffectiveAxes()
@@ -231,9 +230,9 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
             var length: Long = 1
 
             val planarAxes = getPlanarAxes(this)
-
-            for (i in planarAxes.dimensions)
-                length *= dimension(planarAxes.axis(i).type)
+            TODO()
+//            for (i in planarAxes.dimensions)
+//                length *= dimension(planarAxes.axis(i).type)
 
             return length
         }
@@ -243,22 +242,22 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
                  toCopy.isIndexed, toCopy.isFalseColor, toCopy.isMetadataComplete)
 
         // TODO Use setters, not direct assignment.
-        table = DefaultMetaTable(toCopy.table)
-        thumbnail = toCopy.isThumbnail
+        table = DefaultMetaTable(toCopy.table!!)
+        isThumbnail = toCopy.isThumbnail
         thumbSizeX = toCopy.thumbSizeX
         thumbSizeY = toCopy.thumbSizeY
     }
 
-    fun populate(name: String, pixelType: Int, orderCertain: Boolean,
-                 littleEndian: Boolean, indexed: Boolean, falseColor: Boolean,
-                 metadataComplete: Boolean) =
+    override fun populate(name: String, pixelType: Int, orderCertain: Boolean,
+                          littleEndian: Boolean, indexed: Boolean, falseColor: Boolean,
+                          metadataComplete: Boolean) =
         populate(name, pixelType, FormatTools.getBitsPerPixel(pixelType),
                  orderCertain, littleEndian, indexed, falseColor, metadataComplete)
 
-    fun populate(name: String, pixelType: Int, bitsPerPixel: Int,
-                 orderCertain: Boolean, littleEndian: Boolean,
-                 indexed: Boolean, falseColor: Boolean,
-                 metadataComplete: Boolean) {
+    override fun populate(name: String, pixelType: Int, bitsPerPixel: Int,
+                          orderCertain: Boolean, littleEndian: Boolean,
+                          indexed: Boolean, falseColor: Boolean,
+                          metadataComplete: Boolean) {
         this.name = name
         this.bitsPerPixel = bitsPerPixel
         this.isFalseColor = falseColor
@@ -269,17 +268,18 @@ abstract class AbstractImageMetadata : AbstractCalibratedInterval<CalibratedAxis
     }
 
     // -- HasTable API Methods --
-    fun getTable(): MetaTable? {
-        if (table == null) table = DefaultMetaTable() // maybe make table non-nullable and default to this?
-        return table
-    }
-
-    fun setTable(table: MetaTable?) {
-        this.table = table
-    }
+    //    fun getTable(): MetaTable? {
+    //        if (table == null) table = DefaultMetaTable() // maybe make table non-nullable and default to this?
+    //        return table
+    //    }
+    //
+    //    fun setTable(table: MetaTable?) {
+    //        this.table = table
+    //    }
+    override var table: MetaTable? = DefaultMetaTable()
 
     // -- Object API --
-    override fun toString(): String = FieldPrinter(this).toString()
+    override fun toString(): String = TODO()// FieldPrinter(this).toString()
 
     companion object {
         // -- Constants --

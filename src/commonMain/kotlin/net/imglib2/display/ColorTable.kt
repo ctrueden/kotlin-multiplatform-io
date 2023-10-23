@@ -1,4 +1,4 @@
-/*-
+/*
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
@@ -31,15 +31,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imglib2.exception
+package net.imglib2.display
 
-import net.imglib2.Util.toLongArray
+/**
+ *
+ * @author Aivar Grislis
+ */
+interface ColorTable {
+    fun lookupARGB(min: Double, max: Double, value: Double): Int
 
-class InvalidDimensionsException(dimensions: LongArray, message: String?) : IllegalArgumentException(message) {
-    private val dimensions = dimensions.copyOf()
+    /**
+     * Gets the number of color components in the table (typically 3 for RGB or
+     * 4 for RGBA).
+     */
+    val componentCount: Int
 
-    constructor(dimensions: IntArray, message: String?) : this(dimensions.toLongArray(), message)
+    /**
+     * Gets the number of elements for each color component in the table.
+     */
+    val length: Int
 
-    val dimenionsCopy: LongArray
-        get() = dimensions.copyOf()
+    /**
+     * Gets an individual value from the color table.
+     *
+     * @param comp
+     * The color component to query.
+     * @param bin
+     * The index into the color table.
+     * @return The value of the table at the specified position.
+     */
+    fun get(comp: Int, bin: Int): Int
+
+    /**
+     * Gets an individual value from a color table with given number of bins.
+     *
+     * @param comp
+     * The color component to query.
+     * @param bins
+     * The total number of bins.
+     * @param bin
+     * The index into the color table.
+     * @return The value of the table at the specified position.
+     */
+    fun getResampled(comp: Int, bins: Int, bin: Int): Int
+
+    companion object {
+        // TODO ARG What about C,M,Y,K?
+        const val RED: Int = 0
+
+        const val GREEN: Int = 1
+
+        const val BLUE: Int = 2
+
+        const val ALPHA: Int = 3
+    }
 }

@@ -1,18 +1,19 @@
 /*
  * #%L
- * ImageJ2 software for multidimensional image processing and analysis.
+ * SCIFIO library for reading and converting scientific file formats.
  * %%
- * Copyright (C) 2009 - 2023 ImageJ2 developers.
+ * Copyright (C) 2011 - 2015 Board of Regents of the University of
+ * Wisconsin-Madison
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- * 
+ *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -26,26 +27,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package net.imagej.axis
+package io.scif.img.converters
+
+import io.scif.Reader
+//import io.scif.SCIFIOPlugin
+import io.scif.config.SCIFIOConfig
+import net.imagej.ImgPlus
+import net.imglib2.type.numeric.RealType
+
+//import org.scijava.plugin.SingletonPlugin
 
 /**
- * Abstract base class for [CalibratedAxis].
+ * Interface for using planes read by SCIFIO [Reader]s to populate
+ * [ImgPlus] instances.
  *
- * @author Barry DeZonia
+ * @author Mark Hiner
  */
-abstract class AbstractCalibratedAxis(type: AxisType, override var unit: String? = null) : DefaultTypedAxis(type), CalibratedAxis {
-    override fun averageScale(rawValue1: Double, rawValue2: Double): Double =
-        (calibratedValue(rawValue2) - calibratedValue(rawValue1)) / (rawValue2 - rawValue1)
-
-    // -- Object methods --
-    override fun hashCode(): Int = hashString(this).hashCode()
-
-    override fun equals(other: Any?): Boolean = other is CalibratedAxis && hashString(this) == hashString(other)
-
-    // -- Helper methods --
-    /** Computes a likely-to-be-unique string for this axis.  */
-    private fun hashString(axis: CalibratedAxis): String =
-        axis.type.hashCode().toString() + "\n" +  //
-                axis.unit + "\n" +  //
-                axis.particularEquation()
+interface PlaneConverter /*: SCIFIOPlugin, SingletonPlugin*/ {
+    /**
+     * @param reader Reader that was used to open the source plane
+     * @param imageIndex image index within the dataset
+     * @param planeIndex plane index within the image
+     * @param source the opened plane
+     * @param dest the ImgPlus to populate
+     * @param config SCIFIOConfig for opening this plane
+     */
+    fun <T : RealType<T>> populatePlane(reader: Reader, imageIndex: Int,
+                                        planeIndex: Int, source: ByteArray,
+                                        dest: ImgPlus<T>, config: SCIFIOConfig)
 }

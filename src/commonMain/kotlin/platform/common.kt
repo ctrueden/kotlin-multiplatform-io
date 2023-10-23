@@ -1,4 +1,4 @@
-package kotlin
+package platform
 
 open class FormatException(message: String, cause: Throwable? = null) : Exception(message, cause)
 

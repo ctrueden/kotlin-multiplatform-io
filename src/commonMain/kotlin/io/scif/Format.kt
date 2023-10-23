@@ -28,7 +28,7 @@
  */
 package io.scif
 
-import FormatException
+import platform.FormatException
 import kotlin.reflect.KClass
 
 //import org.scijava.io.location.Location

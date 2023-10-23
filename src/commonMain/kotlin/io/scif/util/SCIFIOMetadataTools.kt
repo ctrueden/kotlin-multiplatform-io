@@ -38,6 +38,7 @@ import net.imagej.axis.CalibratedAxis
 import net.imagej.space.DefaultCalibratedSpace
 import net.imglib2.Interval
 import okio.FileHandle
+import platform.FormatException
 import java.util.*
 
 /**
@@ -109,29 +110,32 @@ object SCIFIOMetadataTools {
      * [Axes.Y] in the target [ImageMetadata].
      */
     fun isMultichannel(iMeta: ImageMetadata): Boolean {
-        val cIndex: Int = iMeta.dimensionIndex(Axes.CHANNEL)
-        return cIndex < iMeta.dimensionIndex(Axes.X) || cIndex < iMeta.dimensionIndex(Axes.Y)
+        TODO()
+//        val cIndex: Int = iMeta.dimensionIndex(Axes.CHANNEL)
+//        return cIndex < iMeta.dimensionIndex(Axes.X) || cIndex < iMeta.dimensionIndex(Axes.Y)
     }
 
     /** @Returns true if the provided axes correspond to a complete image plane */
     fun wholeBlock(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
         val wholePlane = wholeRow(imageIndex, meta, range)
-        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
-        return wholePlane && range.min(yIndex) == 0L && range.max(yIndex) == meta[imageIndex].dimension(Axes.Y)
+        TODO()
+//        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
+//        return wholePlane && range.min(yIndex) == 0L && range.max(yIndex) == meta[imageIndex].dimension(Axes.Y)
     }
 
     /** @Returns true if the provided axes correspond to a complete image row */
     fun wholeRow(imageIndex: Int, meta: Metadata, range: Interval): Boolean {
         var wholeRow = true
-        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
-
-        for (i in range.dimensions) {
-            if (!wholeRow) break
-            if (i == yIndex) continue
-            if (range.min(i) != 0L || range.dimension(i) != meta[imageIndex].dimension(i)) wholeRow = false
-        }
-
-        return true
+        TODO()
+//        val yIndex: Int = meta[imageIndex].dimensionIndex(Axes.Y)
+//
+//        for (i in range.dimensions) {
+//            if (!wholeRow) break
+//            if (i == yIndex) continue
+//            if (range.min(i) != 0L || range.dimension(i) != meta[imageIndex].dimension(i)) wholeRow = false
+//        }
+//
+//        return true
     }
 
     /**
@@ -280,15 +284,16 @@ object SCIFIOMetadataTools {
         // Once we have seen both Axes.X and Axes.Y we have identified all planar
         // axes.
         var i = 0
-        while (xyCount < 2 && i < iMeta.numDimensions) {
-            val axis: CalibratedAxis = iMeta.axis(i)
-            if (axis.type == Axes.X || axis.type == Axes.Y) {
-                if (includeXY) axes += axis
-                xyCount++
-            } else axes += axis
-            i++
-        }
-
-        return DefaultCalibratedSpace(axes)
+        TODO()
+//        while (xyCount < 2 && i < iMeta.numDimensions) {
+//            val axis: CalibratedAxis = iMeta.axis(i)
+//            if (axis.type == Axes.X || axis.type == Axes.Y) {
+//                if (includeXY) axes += axis
+//                xyCount++
+//            } else axes += axis
+//            i++
+//        }
+//
+//        return DefaultCalibratedSpace(axes)
     }
 }

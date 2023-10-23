@@ -43,7 +43,7 @@ package io.scif
  *
  * @author Mark Hiner
  */
-interface Checker/* : HasFormat*/ {
+interface Checker : HasFormat {
     // -- Checker API methods --
     /**
      * Whether the file extension matching one of the format's suffixes is

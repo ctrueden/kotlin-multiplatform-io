@@ -28,10 +28,11 @@
  */
 package io.scif
 
-import org.scijava.io.handle.DataHandle
-import org.scijava.io.location.Location
-import kotlin.jvm.JvmOverloads
+import okio.IOException
+//import org.scijava.io.handle.DataHandle
+//import org.scijava.io.location.Location
 import kotlin.jvm.Transient
+import kotlin.reflect.KClass
 
 /**
  * Abstract superclass of all SCIFIO [io.scif.Metadata] implementations.
@@ -44,145 +45,155 @@ import kotlin.jvm.Transient
  *
  * @author Mark Hiner
  */
-abstract class AbstractMetadata(list: List<ImageMetadata>? = null) : AbstractHasSource(), TypedMetadata {
+abstract class AbstractMetadata(list: List<ImageMetadata?>? = null) : AbstractHasSource(), TypedMetadata {
     // -- Fields --
     /* The image source associated with this Metadata. */
-//    @Transient
-//    private var source: DataHandle<Location>? = null
+    //    @Transient
+    //    private var source: DataHandle<Location>? = null
 
     /* The image source location associated with this Metadata. */
-//    @Transient var sourceLocation: Location? = null
+    //    @Transient var sourceLocation: Location? = null
 
     /** The location an image with this metadata will be written to.  */
-//    @Transient var destinationLocation: Location? = null
+    //    @Transient var destinationLocation: Location? = null
 
     /* Whether the Metadata should be filtered or not. */
     override var isFiltered: Boolean = false
 
     /* Contains a list of metadata objects for each image in this dataset */
     @Transient
-    private var imageMeta: MutableList<ImageMetadata>? = null
+    private var imageMeta: MutableList<ImageMetadata?>? = null
 
-    // -- Setters --
-    // -- Getters --
     /* A string id for this dataset. */
     override var datasetName: String? = null
 
     /* A table of Field key, value pairs */
-//    private var table: MetaTable?
+    override var table: MetaTable? = null
+        get() {
+            if (field == null) field = DefaultMetaTable(isFiltered)
+            return field
+        }
 
     constructor(copy: Metadata) : this(copy.all) {
-        table = DefaultMetaTable(copy.getTable())
+        table = DefaultMetaTable(copy.table!!)
     }
 
     // -- Constructors --
     init {
-        imageMeta = java.util.ArrayList<ImageMetadata>()
+        imageMeta = ArrayList()
         table = DefaultMetaTable()
 
-        if (list != null) {
-            for (core in list) {
-                imageMeta!!.add(core.copy())
-            }
-        }
+        if (list != null)
+            for (core in list)
+                imageMeta!! += core!!.copy()
     }
 
     // -- Metadata API Methods --
-    fun setSource(source: DataHandle<Location?>) {
-        this.source = source
+    //    fun setSource(source: DataHandle<Location?>) {
+    //        this.source = source
+    //
+    //        if (source != null) datasetName = source.get().getName()
+    //    }
+    //
+    //    fun getSource(): DataHandle<Location>? {
+    //        return source
+    //    }
 
-        if (source != null) datasetName = source.get().getName()
+    override operator fun get(imageIndex: Int): ImageMetadata {
+        ensureMetadataExists(imageIndex)
+        return imageMeta!![imageIndex]!!
     }
 
-    fun getSource(): DataHandle<Location>? {
-        return source
-    }
-
-    fun get(imageIndex: Int): ImageMetadata {
-        return imageMeta!![imageIndex]
-    }
-
-    override val all: List<Any>?
-        get() = imageMeta
+    override val all: List<ImageMetadata?>
+        get() {
+            for (i in 0..<imageCount)
+                ensureMetadataExists(i)
+            return imageMeta!!
+        }
 
     override val imageCount: Int
         get() = imageMeta!!.size
 
     override val datasetSize: Long
-        get() {
-            var size: Long = 0
+        get() = all.indices.sumOf { get(it).size }
 
-            for (i in all!!.indices) size += get(i).getSize()
-
-            return size
-        }
-
-    fun add(meta: ImageMetadata) {
-        imageMeta!!.add(meta)
+    override fun add(meta: ImageMetadata) {
+        imageMeta!! += meta
     }
 
-    override fun createImageMetadata(imageCount: Int) {
-        imageMeta!!.clear()
-
-        for (i in 0 until imageCount) add(DefaultImageMetadata())
-    }
+    override fun clearImageMetadata() = imageMeta!!.clear()
 
     // -- HasMetaTable API Methods --
-    fun getTable(): MetaTable? {
-        if (table == null) table = DefaultMetaTable(isFiltered)
-        return table
-    }
 
-    fun setTable(table: MetaTable?) {
-        this.table = table
-    }
 
     // -- HasSource API Methods --
-    @Throws(java.io.IOException::class) fun close(fileOnly: Boolean) {
-        if (source != null) {
-            source.close()
-        }
+    @Throws(IOException::class)
+    override fun close(fileOnly: Boolean) {
+//        if (source != null)
+//            source.close()
 
-        if (!fileOnly) reset(javaClass)
+        if (!fileOnly) reset(this::class)
+    }
+
+
+    // -- AbstractMetadata API --
+    /**
+     * Using the format-specific metadata contained in this object, generate
+     * the [ImageMetadata] for this dataset at the given image index.
+     */
+    protected abstract fun generateImageMetadata(imageIndex: Int): ImageMetadata?
+
+
+    // -- Helper Methods --
+    /**
+     * Ensures there is [ImageMetadata] for the specified image index,
+     * creating it if it is not already present.
+     */
+    private fun ensureMetadataExists(imageIndex: Int) {
+        if (imageMeta!!.size <= imageIndex || imageMeta!![imageIndex] == null) {
+            val iMeta = generateImageMetadata(imageIndex)
+            imageMeta!![imageIndex] = iMeta
+        }
     }
 
     // -- Helper Methods --
-    private fun reset(type: java.lang.Class<*>?) {
-        if (type == null || type == AbstractMetadata::class.java) return
+    private fun reset(type: KClass<*>?) {
+        if (type == null || type == AbstractMetadata::class) return
 
-        for (f in type.getDeclaredFields()) {
-            f.setAccessible(true)
-
-            if (java.lang.reflect.Modifier.isFinal(f.getModifiers())) continue
-
-            // only reset annotated fields
-            if (f.getAnnotation(io.scif.Field::class.java) == null) continue
-
-            val fieldType: java.lang.Class<*> = f.getType()
-
-            try {
-                if (fieldType == Boolean::class.javaPrimitiveType) f.set(this, false)
-                else if (fieldType == Char::class.javaPrimitiveType) f.set(this, 0)
-                else if (fieldType == Double::class.javaPrimitiveType) f.set(this, 0.0)
-                else if (fieldType == Float::class.javaPrimitiveType) f.set(this, 0f)
-                else if (fieldType == Int::class.javaPrimitiveType) f.set(this, 0)
-                else if (fieldType == Long::class.javaPrimitiveType) f.set(this, 0L)
-                else if (fieldType == Short::class.javaPrimitiveType) f.set(this, 0)
-                else f.set(this, null)
-            } catch (e: java.lang.IllegalArgumentException) {
-                log().debug(e.message)
-            } catch (e: java.lang.IllegalAccessException) {
-                log().debug(e.message)
-            }
-
-            table = DefaultMetaTable()
-            imageMeta = java.util.ArrayList<ImageMetadata>()
-
-            // check superclasses and interfaces
-            reset(type.getSuperclass())
-            for (c in type.getInterfaces()) {
-                reset(c)
-            }
-        }
+        TODO()
+//        for (f in type.getDeclaredFields()) {
+//            f.setAccessible(true)
+//
+//            if (java.lang.reflect.Modifier.isFinal(f.getModifiers())) continue
+//
+//            // only reset annotated fields
+//            if (f.getAnnotation(io.scif.Field::class.java) == null) continue
+//
+//            val fieldType: java.lang.Class<*> = f.getType()
+//
+//            try {
+//                if (fieldType == Boolean::class.javaPrimitiveType) f.set(this, false)
+//                else if (fieldType == Char::class.javaPrimitiveType) f.set(this, 0)
+//                else if (fieldType == Double::class.javaPrimitiveType) f.set(this, 0.0)
+//                else if (fieldType == Float::class.javaPrimitiveType) f.set(this, 0f)
+//                else if (fieldType == Int::class.javaPrimitiveType) f.set(this, 0)
+//                else if (fieldType == Long::class.javaPrimitiveType) f.set(this, 0L)
+//                else if (fieldType == Short::class.javaPrimitiveType) f.set(this, 0)
+//                else f.set(this, null)
+//            } catch (e: java.lang.IllegalArgumentException) {
+//                log().debug(e.message)
+//            } catch (e: java.lang.IllegalAccessException) {
+//                log().debug(e.message)
+//            }
+//
+//            table = DefaultMetaTable()
+//            imageMeta = java.util.ArrayList<ImageMetadata>()
+//
+//            // check superclasses and interfaces
+//            reset(type.getSuperclass())
+//            for (c in type.getInterfaces()) {
+//                reset(c)
+//            }
+//        }
     }
 }

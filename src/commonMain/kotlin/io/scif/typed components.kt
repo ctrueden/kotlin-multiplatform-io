@@ -2,8 +2,10 @@ package io.scif
 
 import io.scif.config.SCIFIOConfig
 import net.imglib2.Interval
+import net.imglib2.type.NativeType
 import okio.FileHandle
 import okio.IOException
+import platform.FormatException
 import kotlin.reflect.KClass
 
 
@@ -92,7 +94,7 @@ interface TypedParser<M : TypedMetadata> : Parser {
  * @param <M> The [io.scif.Metadata] type associated with this Writer.
 </M> */
 interface TypedWriter<M : TypedMetadata> : Writer {
-    @set:Throws(FormatException::class)
+//    @set:Throws(FormatException::class)
     override var metadata: Metadata
 }
 
@@ -112,7 +114,7 @@ interface TypedWriter<M : TypedMetadata> : Writer {
  * @see .setMetadata
  * @see .getMetadata
 </P></M> */
-interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>> : Reader {
+interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T>> : Reader {
 
     @Throws(FormatException::class, IOException::class)
     override fun openBlock(imageIndex: Int, blockIndex: Long): B
@@ -164,10 +166,10 @@ interface TypedReader<M : TypedMetadata, T : NativeType<T>, B : TypedBlock<T, *>
     @Throws(FormatException::class, IOException::class)
     fun openRegion(imageIndex: Int, range: Interval, block: B, config: SCIFIOConfig): B
 
-    @set:Throws(IOException::class)
+//    @set:Throws(IOException::class)
     override var metadata: Metadata?
 
-    @set:Throws(IOException::class)
+//    @set:Throws(IOException::class)
     var m: M?
 
     /**

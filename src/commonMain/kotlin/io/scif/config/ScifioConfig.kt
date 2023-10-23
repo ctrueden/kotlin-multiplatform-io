@@ -34,6 +34,7 @@ import io.scif.codec.CodecOptions
 import io.scif.img.ImageRegion
 import io.scif.img.ImgFactoryHeuristic
 import io.scif.img.Range
+import io.scif.img.converters.PlaneConverter
 import java.awt.image.ColorModel
 
 /**

@@ -28,7 +28,8 @@
  */
 package io.scif
 
-import FormatException
+//import FormatException
+import platform.FormatException
 import kotlin.reflect.KClass
 
 /**
@@ -53,15 +54,7 @@ import kotlin.reflect.KClass
 abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
     // -- Fields --
     /** Valid suffixes for this file format.  */
-    var suffixes: Array<String>
-        // -- Format API Methods --
-        get() {
-            if (field == null) {
-                field = makeSuffixArray()
-            }
-            return field
-        }
-        private set
+    override val suffixes: Array<String> by lazy{ makeSuffixArray() }
 
     override var isEnabled: Boolean = true
 
@@ -69,7 +62,7 @@ abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
     override var metadataClass: KClass<out Metadata> = DefaultMetadata::class
     override var checkerClass: KClass<out Checker> = DefaultChecker::class
     override var parserClass: KClass<out Parser> = DefaultParser::class
-    override var readerClass: KClass<out Reader> = DefaultReader::class
+    override var readerClass: KClass<out Reader> = TODO()// DefaultReader::class
     override var writerClass: KClass<out Writer> = DefaultWriter::class
 
     // -- Constructor --
@@ -85,10 +78,10 @@ abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
      *
      * @return Valid suffixes for this file format.
      */
-    protected abstract fun makeSuffixArray(): Array<String>?
+    protected abstract fun makeSuffixArray(): Array<String>
 
     override val formatName: String
-        get() = getInfo().getName()
+        get() = TODO("`getInfo` comes from `AbstractRichPlugin`")// getInfo().getName()
 
     @Throws(FormatException::class)
     override fun createMetadata(): Metadata = createContextualObject(metadataClass)
@@ -113,31 +106,32 @@ abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
     @Throws(FormatException::class)
     private fun <T : HasFormat> createContextualObject(c: KClass<T>): T {
         val t: T = createObject(c)
-        t.setContext(getContext())
-
-        // if we are creating a Default component, we need to
-        // manually set its Format.
-        if (DefaultComponent::class.java.isAssignableFrom(t.getClass())) {
-            try {
-                val fmt: java.lang.reflect.Field = t.getClass().getDeclaredField(
-                    "format")
-                fmt.setAccessible(true)
-                fmt.set(t, this)
-            } catch (e: java.lang.NoSuchFieldException) {
-                throw FormatException( //
-                    "Failed to populate DefaultComponent field", e)
-            } catch (e: java.lang.SecurityException) {
-                throw FormatException(
-                    "Failed to populate DefaultComponent field", e)
-            } catch (e: java.lang.IllegalArgumentException) {
-                throw FormatException(
-                    "Failed to populate DefaultComponent field", e)
-            } catch (e: java.lang.IllegalAccessException) {
-                throw FormatException(
-                    "Failed to populate DefaultComponent field", e)
-            }
-        }
-        return t
+        TODO()
+        //        t.setContext(getContext())
+        //
+        //        // if we are creating a Default component, we need to
+        //        // manually set its Format.
+        //        if (DefaultComponent::class.java.isAssignableFrom(t.getClass())) {
+        //            try {
+        //                val fmt: java.lang.reflect.Field = t.getClass().getDeclaredField(
+        //                    "format")
+        //                fmt.setAccessible(true)
+        //                fmt.set(t, this)
+        //            } catch (e: java.lang.NoSuchFieldException) {
+        //                throw FormatException( //
+        //                    "Failed to populate DefaultComponent field", e)
+        //            } catch (e: java.lang.SecurityException) {
+        //                throw FormatException(
+        //                    "Failed to populate DefaultComponent field", e)
+        //            } catch (e: java.lang.IllegalArgumentException) {
+        //                throw FormatException(
+        //                    "Failed to populate DefaultComponent field", e)
+        //            } catch (e: java.lang.IllegalAccessException) {
+        //                throw FormatException(
+        //                    "Failed to populate DefaultComponent field", e)
+        //            }
+        //        }
+        //        return t
     }
 
     /*
@@ -145,26 +139,28 @@ abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
 	 */
     @Throws(FormatException::class)
     private fun <T : HasFormat> createObject(c: KClass<T>): T {
-        try {
-            return c.newInstance()
-        } catch (e: java.lang.InstantiationException) {
-            throw FormatException(e)
-        } catch (e: java.lang.IllegalAccessException) {
-            throw FormatException(e)
-        }
+        TODO()
+        //        try {
+        //            return c.newInstance()
+        //        } catch (e: java.lang.InstantiationException) {
+        //            throw FormatException(e)
+        //        } catch (e: java.lang.IllegalAccessException) {
+        //            throw FormatException(e)
+        //        }
     }
 
     /*
 	 * Overrides the default classes with declared custom components.
 	 */
     private fun updateCustomClasses() {
-        for (c in buildClassList()) {
-            if (Metadata::class.java.isAssignableFrom(c)) metadataClass = c as KClass<out Metadata>
-            else if (Checker::class.java.isAssignableFrom(c)) checkerClass = c as KClass<out Checker>
-            else if (Parser::class.java.isAssignableFrom(c)) parserClass = c as KClass<out Parser>
-            else if (Reader::class.java.isAssignableFrom(c)) readerClass = c as KClass<out Reader>
-            else if (Writer::class.java.isAssignableFrom(c)) writerClass = c as KClass<out Writer>
-        }
+        TODO()
+        //        for (c in buildClassList()) {
+        //            if (Metadata::class.java.isAssignableFrom(c)) metadataClass = c as KClass<out Metadata>
+        //            else if (Checker::class.java.isAssignableFrom(c)) checkerClass = c as KClass<out Checker>
+        //            else if (Parser::class.java.isAssignableFrom(c)) parserClass = c as KClass<out Parser>
+        //            else if (Reader::class.java.isAssignableFrom(c)) readerClass = c as KClass<out Reader>
+        //            else if (Writer::class.java.isAssignableFrom(c)) writerClass = c as KClass<out Writer>
+        //        }
     }
 
     /*
@@ -172,22 +168,23 @@ abstract class AbstractFormat : /*AbstractSCIFIOPlugin(),*/ Format {
 	 * them to a complete class list.
 	 */
     private fun buildClassList(): List<KClass<*>> {
-        val classes: Array<KClass<*>> = this.javaClass.getDeclaredClasses()
-        val classList = ArrayList<KClass<*>>()
-
-        for (c in classes)
-            check(c, classList)
-
-        return classList
+        TODO()
+        //        val classes: Array<KClass<*>> = this.javaClass.getDeclaredClasses()
+        //        val classList = ArrayList<KClass<*>>()
+        //
+        //        for (c in classes)
+        //            check(c, classList)
+        //
+        //        return classList
     }
 
     /*
 	 * Recursive method to add a class, and all nested classes declared in that
 	 * class, to the provided list of classes.
 	 */
-    private fun check(newClass: java.lang.Class<*>, classList: MutableList<java.lang.Class<*>>) {
+    private fun check(newClass: KClass<*>, classList: MutableList<KClass<*>>) {
         classList.add(newClass)
-
-        for (c in newClass.getDeclaredClasses()) check(c, classList)
+        TODO()
+        //        for (c in newClass.getDeclaredClasses()) check(c, classList)
     }
 }

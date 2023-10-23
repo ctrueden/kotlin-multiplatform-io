@@ -92,7 +92,7 @@ class CodecOptions {
     var maxBytes: Int = 0
 
     /** Pixels for preceding image (READ/WRITE).  */
-    var previousImage: ByteArray
+    lateinit var previousImage: ByteArray
 
     /**
      * Used with codecs allowing lossy and lossless compression. Default is set to
@@ -119,26 +119,24 @@ class CodecOptions {
     constructor()
 
     /** Construct a new CodecOptions using the given CodecOptions.  */
-    constructor(options: CodecOptions?) {
-        if (options != null) {
-            this.width = options.width
-            this.height = options.height
-            this.channels = options.channels
-            this.bitsPerSample = options.bitsPerSample
-            this.littleEndian = options.littleEndian
-            this.interleaved = options.interleaved
-            this.signed = options.signed
-            this.maxBytes = options.maxBytes
-            this.previousImage = options.previousImage
-            this.lossless = options.lossless
-            this.colorModel = options.colorModel
-            this.quality = options.quality
-            this.tileWidth = options.tileWidth
-            this.tileHeight = options.tileHeight
-            this.tileGridXOffset = options.tileGridXOffset
-            this.tileGridYOffset = options.tileGridYOffset
-            this.ycbcr = options.ycbcr
-        }
+    constructor(options: CodecOptions) {
+        width = options.width
+        height = options.height
+        channels = options.channels
+        bitsPerSample = options.bitsPerSample
+        littleEndian = options.littleEndian
+        interleaved = options.interleaved
+        signed = options.signed
+        maxBytes = options.maxBytes
+        previousImage = options.previousImage
+        lossless = options.lossless
+        colorModel = options.colorModel
+        quality = options.quality
+        tileWidth = options.tileWidth
+        tileHeight = options.tileHeight
+        tileGridXOffset = options.tileGridXOffset
+        tileGridYOffset = options.tileGridYOffset
+        ycbcr = options.ycbcr
     }
 
     companion object {

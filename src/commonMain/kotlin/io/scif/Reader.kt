@@ -32,6 +32,7 @@ import io.scif.config.SCIFIOConfig
 import net.imglib2.Interval
 import okio.FileHandle
 import okio.IOException
+import platform.FormatException
 
 /**
  * Interface for all SCIFIO Readers.
@@ -188,7 +189,7 @@ interface Reader : HasFormat, HasSource, Groupable {
     //    val currentLocation: Location?
 
     /** Returns the list of domains represented by the current file.  */
-    val domains: Array<String?>?
+    val domains: Array<String>
 
     /**
      * Retrieves the current input stream for this reader.
@@ -201,7 +202,7 @@ interface Reader : HasFormat, HasSource, Groupable {
     fun getOptimalBlockSize(imageIndex: Int): Interval
 
     /** Gets the type-specific Metadata for this Reader  */
-    @set:Throws(IOException::class)
+//    @set:Throws(IOException::class)
     var metadata: Metadata?
 
     // TODO remove normalization methods
