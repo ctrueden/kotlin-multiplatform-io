@@ -1,3 +1,4 @@
+import de.undercouch.gradle.tasks.download.Download
 import magik.github
 
 plugins {
@@ -6,6 +7,7 @@ plugins {
     id("elect86.magik") version "0.3.3"
     embeddedKotlin("plugin.serialization")
     embeddedKotlin("plugin.assignment")
+    id("de.undercouch.download") version "5.5.0"
 }
 
 assignment {
@@ -45,7 +47,6 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-//                implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.3.0")
                 implementation("com.squareup.okio:okio:3.6.0")
                 implementation("kotlin.graphics:unsigned:3.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
@@ -57,9 +58,26 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("org.scijava:scijava-common:2.77.0")
+            }
+        }
         val jvmTest by getting
         val nativeMain by getting
         val nativeTest by getting
+    }
+}
+
+tasks {
+
+    val downloadZipFile by registering(Download::class) {
+        src("https://samples.scif.io/test-png.zip")
+        dest(layout.buildDirectory.file("tmp/assets/test-png.zip"))
+    }
+    val downloadAndUnzipFile by registering(Copy::class) {
+        dependsOn(downloadZipFile)
+        from(zipTree(downloadZipFile.get().dest))
+        into(layout.buildDirectory.file("resources/apng"))
     }
 }

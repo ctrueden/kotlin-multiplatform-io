@@ -1,7 +1,7 @@
-package io.scif.sdt
+package io.scif.formats.sdt
 
 import io.scif.api.*
-import io.scif.sdt.SdtFormat.Companion.FIFO_IMAGE_MODE
+import io.scif.formats.sdt.SdtFormat.Companion.FIFO_IMAGE_MODE
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.toLocalDate

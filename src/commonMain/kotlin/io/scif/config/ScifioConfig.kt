@@ -64,9 +64,9 @@ import java.awt.image.ColorModel
  *
  * @see ImgSaver
  */
-class SCIFIOConfig {
-    // [Kotlin] we cant extend `HashMap` because it's a final class, so we create an internal field
-    val hashMap: HashMap<String, Any> = HashMap()
+class SCIFIOConfig
+/** Zero-param constructor. Creates an empty configuration. */
+    () : MutableMap<String, Any> by HashMap() {
 
     // -- Fields --
     // Checker
@@ -111,9 +111,7 @@ class SCIFIOConfig {
      *
      * @author Mark Hiner
      */
-    enum class ImgMode {
-        ARRAY, AUTO, CELL, PLANAR
-    }
+    enum class ImgMode { ARRAY, AUTO, CELL, PLANAR }
 
     // If true, planarEnabled returns true. If false, cellEnabled returns true.
     // If null, both planar/cell enabled will return false.
@@ -141,18 +139,14 @@ class SCIFIOConfig {
     private var writeRGB = true
 
     // -- Constructors --
-    /**
-     * Zero-param constructor. Creates an empty configuration.
-     */
-    constructor()
 
     /**
      * Copying constructor. Returns a copy of the given SCIFIOConfig.
      *
      * @param config Configuration to copy.
      */
-    constructor(config: SCIFIOConfig) {
-        hashMap += config.hashMap
+    constructor(config: SCIFIOConfig) : this() {
+        this += config
         openDataset = config.openDataset
         level = config.level
         filterMetadata = config.filterMetadata
@@ -182,30 +176,4 @@ class SCIFIOConfig {
 
     // -- Clonable methods --
     fun clone() = SCIFIOConfig(this)
-
-
-    // [Kotlin] `HashMap` methods
-
-    // From Map
-
-    val size: Int
-        get() = hashMap.size
-
-    fun isEmpty(): Boolean = hashMap.isEmpty()
-    fun containsKey(key: String): Boolean = hashMap.containsKey(key)
-    fun containsValue(value: Any): Boolean = hashMap.containsValue(value)
-    operator fun get(key: String): Any? = hashMap[key]
-
-    // From MutableMap
-
-    fun put(key: String, value: Any): Any? = hashMap.put(key, value)
-    fun remove(key: String): Any? = hashMap.remove(key)
-    fun putAll(from: Map<out String, Any>) = hashMap.putAll(from)
-    fun clear() = hashMap.clear()
-    val keys: MutableSet<String>
-        get() = hashMap.keys
-    val values: MutableCollection<Any>
-        get() = hashMap.values
-    val entries: MutableSet<MutableMap.MutableEntry<String, Any>>
-        get() = hashMap.entries
 }

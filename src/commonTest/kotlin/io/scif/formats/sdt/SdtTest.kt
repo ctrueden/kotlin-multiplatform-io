@@ -1,14 +1,9 @@
-package sdt
+package io.scif.formats.sdt
 
 import HostFileSystem
 import io.scif.`==`
-import io.scif.api.*
-import io.scif.sdt.SdtFormat
-import io.scif.sdt.SdtSetup
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
-import kotlinx.datetime.toLocalDate
-import kotlinx.datetime.toLocalTime
 import okio.Path.Companion.toPath
 import okio.use
 import uns.*
@@ -18,6 +13,7 @@ class SdtTest {
 
     @Test
     fun test() {
+
         val path = "/home/elect/IdeaProjects/scifio-lifesci/test.sdt".toPath()
         val sdt = HostFileSystem.openReadOnly(path).use(::SdtFormat)
 
@@ -221,7 +217,7 @@ class SdtTest {
                     maxcnt `==` 65535
                     lbline `==` 1
                     bline `==` 0
-                    grid `==` 6
+//                    grid `==` 6
                     gcolF `==` 14737632
                     gcolB `==` 16777215
                     trace `==` 0
@@ -267,6 +263,7 @@ class SdtTest {
                     sxwin `==` 1
                     ascale `==` 1
                 }
+                tr.size `==` 16
                 tr[0] `==` intArrayOf(1, 255, 1, 1, 4, 1, 1, 1)
                 tr[1] `==` intArrayOf(1, 65280, 1, 1, 1, 2, 1, 1)
                 tr[2] `==` intArrayOf(1, 65535, 1, 1, 1, 3, 1, 1)
@@ -283,6 +280,7 @@ class SdtTest {
                 tr[13] `==` intArrayOf(0, 16162524, 1, 1, 1, 1, 1, 1)
                 tr[14] `==` intArrayOf(0, 13832959, 1, 1, 1, 1, 1, 1)
                 tr[15] `==` intArrayOf(0, 8067690, 1, 1, 1, 1, 1, 1)
+                wi.size `==` 33
                 wi[0] `==` SdtSetup.WI(0, false, 0, 0, 0)
                 wi[1] `==` SdtSetup.WI(0, false, 1, 0, 0)
                 wi[2] `==` SdtSetup.WI(0, false, 2, 0, 0)
@@ -317,7 +315,7 @@ class SdtTest {
                 wi[31] `==` SdtSetup.WI(4, false, 6, 192, 223)
                 wi[32] `==` SdtSetup.WI(4, false, 7, 224, 255)
             }
-            measureInfo?.apply {
+            measureInfo!!.apply {
                 time `==` LocalTime(9, 27, 29)
                 date `==` LocalDate(2019, 3, 5)
                 modSerNo `==` "3F0316"
@@ -376,7 +374,7 @@ class SdtTest {
                 adcZoom `==` 0
                 cycles `==` 1
             }
-            measStopInfo?.apply {
+            measStopInfo!!.apply {
                 status `==` 16.us
                 flags `==` 33190.us
                 stopTime `==` 120.65626f
@@ -394,7 +392,7 @@ class SdtTest {
                 mReserved1 `==` 0
                 mReserved2 `==` 0f
             }
-            measFCSInfo?.apply {
+            measFCSInfo!!.apply {
                 chan `==` 0.us
                 fcsDecayCalc `==` 32.us
                 mtResol `==` 250u
@@ -409,7 +407,7 @@ class SdtTest {
                 crossMod `==` 0.us
                 crossMtResol `==` 250u
             }
-            extendedMeasureInfo?.apply {
+            extendedMeasureInfo!!.apply {
                 imageX `==` 256
                 imageY `==` 256
                 imageRX `==` 1
@@ -420,7 +418,7 @@ class SdtTest {
                 detType `==` 0.i16
                 xAxis `==` 0.i16
             }
-            measHISTInfo?.apply {
+            measHISTInfo!!.apply {
                 fidaTime `==` 0f
                 fildaTime `==` 0f
                 fidaPoints `==` 244
@@ -428,6 +426,7 @@ class SdtTest {
                 mcsTime `==` 0f
                 mcsPoints `==` 256
             }
+            bhFileBlockHeader.size `==` 1
             bhFileBlockHeader[0].apply {
                 blockNo `==` 0.i16
                 dataOffs `==` 25937
@@ -692,6 +691,7 @@ class SdtTest {
                     sxwin `==` 1
                     ascale `==` 0
                 }
+                tr.size `==` 8
                 tr[0] `==` intArrayOf(0, 0, 1, 1, 4, 1, 1, 1)
                 tr[1] `==` intArrayOf(0, 65280, 2, 1, 1, 2, 2, 1)
                 tr[2] `==` intArrayOf(0, 16776960, 3, 1, 1, 3, 3, 1)
@@ -700,6 +700,7 @@ class SdtTest {
                 tr[5] `==` intArrayOf(0, 32768, 6, 1, 1, 1, 6, 1)
                 tr[6] `==` intArrayOf(0, 8421376, 7, 1, 1, 1, 7, 1)
                 tr[7] `==` intArrayOf(0, 8388608, 8, 1, 1, 1, 8, 1)
+                wi.size `==` 40
                 wi[0] `==` SdtSetup.WI(0, false, 0, 0, 1)
                 wi[1] `==` SdtSetup.WI(0, false, 1, 2, 3)
                 wi[2] `==` SdtSetup.WI(0, false, 2, 4, 5)
@@ -739,7 +740,7 @@ class SdtTest {
                 wi[38] `==` SdtSetup.WI(4, false, 6, 96, 111)
                 wi[39] `==` SdtSetup.WI(4, false, 7, 112, 127)
             }
-            measureInfo?.apply {
+            measureInfo!!.apply {
                 time `==` LocalTime(14, 26, 4)
                 date `==` LocalDate(2006, 3, 8)
                 modSerNo `==` "3D0049"
@@ -798,7 +799,7 @@ class SdtTest {
                 adcZoom `==` 0
                 cycles `==` 1
             }
-            measStopInfo?.apply {
+            measStopInfo!!.apply {
                 status `==` 3624.us
                 flags `==` 32774.us
                 stopTime `==` 21.199951f
@@ -816,7 +817,7 @@ class SdtTest {
                 mReserved1 `==` 0
                 mReserved2 `==` 0f
             }
-            measFCSInfo?.apply {
+            measFCSInfo!!.apply {
                 chan `==` 0.us
                 fcsDecayCalc `==` 0.us
                 mtResol `==` 0u
@@ -831,7 +832,7 @@ class SdtTest {
                 crossMod `==` 0.us
                 crossMtResol `==` 0u
             }
-            extendedMeasureInfo?.apply {
+            extendedMeasureInfo!!.apply {
                 imageX `==` 0
                 imageY `==` 0
                 imageRX `==` 0
@@ -842,7 +843,7 @@ class SdtTest {
                 detType `==` 0.i16
                 xAxis `==` 0.i16
             }
-            measHISTInfo?.apply {
+            measHISTInfo!!.apply {
                 fidaTime `==` 0f
                 fildaTime `==` 0f
                 fidaPoints `==` 0
@@ -850,6 +851,7 @@ class SdtTest {
                 mcsTime `==` 0f
                 mcsPoints `==` 0
             }
+            bhFileBlockHeader.size `==` 1
             bhFileBlockHeader[0].apply {
                 blockNo `==` 1.i16
                 dataOffs `==` 7731

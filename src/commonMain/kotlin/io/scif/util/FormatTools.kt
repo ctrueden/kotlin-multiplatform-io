@@ -35,6 +35,7 @@ import net.imagej.axis.AxisType
 import net.imagej.axis.CalibratedAxis
 import net.imagej.axis.DefaultLinearAxis
 import net.imagej.axis.LinearAxis
+import platform.FormatException
 //import net.imglib2.FinalInterval
 //import net.imglib2.Interval
 //import net.imglib2.util.Intervals
@@ -769,25 +770,23 @@ object FormatTools {
     //        }
     //        throw java.lang.IllegalArgumentException("Unknown pixel type: $pixelType")
     //    }
-    //
-    //    /**
-    //     * Returns an appropriate pixel type given the number of bytes per pixel.
-    //     *
-    //     * @param bytes number of bytes per pixel.
-    //     * @param signed whether or not the pixel type should be signed.
-    //     * @param fp whether or not these are floating point pixels.
-    //     */
-    //    @Throws(FormatException::class) fun pixelTypeFromBytes(bytes: Int, signed: Boolean,
-    //                                                           fp: Boolean): Int {
-    //        return when (bytes) {
-    //            1 -> if (signed) INT8 else UINT8
-    //            2 -> if (signed) INT16 else UINT16
-    //            4 -> if (fp) FLOAT else if (signed) INT32 else UINT32
-    //            8 -> DOUBLE
-    //            else -> throw FormatException("Unsupported byte depth: $bytes")
-    //        }
-    //    }
-    //
+
+        /**
+         * Returns an appropriate pixel type given the number of bytes per pixel.
+         *
+         * @param bytes number of bytes per pixel.
+         * @param signed whether or not the pixel type should be signed.
+         * @param fp whether or not these are floating point pixels.
+         */
+        @Throws(FormatException::class)
+        fun pixelTypeFromBytes(bytes: Int, signed: Boolean, fp: Boolean): Int = when (bytes) {
+            1 -> if (signed) INT8 else UINT8
+            2 -> if (signed) INT16 else UINT16
+            4 -> if (fp) FLOAT else if (signed) INT32 else UINT32
+            8 -> DOUBLE
+            else -> throw FormatException("Unsupported byte depth: $bytes")
+        }
+
     //    // -- Utility methods -- export
     //    /**
     //     * @throws FormatException Never actually thrown.

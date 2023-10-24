@@ -24,7 +24,7 @@
  */
 @file:OptIn(ExperimentalContracts::class)
 
-package io.scif.sdt
+package io.scif.formats.sdt
 
 import io.scif.api.buffer
 import io.scif.api.readUtf8

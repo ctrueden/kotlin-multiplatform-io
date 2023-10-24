@@ -10,7 +10,7 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
-val bigEndian = false
+var bigEndian = false
 val BufferedSource.i8: Byte
     get() = readByte()
 val BufferedSource.i16: Short

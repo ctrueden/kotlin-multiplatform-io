@@ -1,4 +1,4 @@
-package io.scif.sdt
+package io.scif.formats.sdt
 
 import io.scif.api.*
 import kotlinx.datetime.LocalDate
