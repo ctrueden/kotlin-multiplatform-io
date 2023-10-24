@@ -97,6 +97,8 @@ inline fun FileHandle.reposition(bufferedSource: BufferedSource, position: ULong
 ////        }
 //    }
 
+val String.i8: Byte
+    get() = toByte()
 val String.i: Int
     get() = toInt()
 val String.L: Long

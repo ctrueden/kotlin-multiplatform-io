@@ -80,7 +80,7 @@ constructor(var filtered: Boolean = false)
 //            return null
 //        }
 
-        k = k.trim()
+        k = k.trim { c -> c <= ' ' }
 
         val string = v is String || v is Char
         val simple = string || v is Number || v is Boolean
@@ -114,7 +114,7 @@ constructor(var filtered: Boolean = false)
 
             // verify key & value are not empty
             if (k.isEmpty()) return null
-            if (string && `val`!!.trim().isEmpty()) return null
+            if (string && `val`!!.trim { c -> c <= ' ' }.isEmpty()) return null
 
             if (string) v = `val`!!
         }

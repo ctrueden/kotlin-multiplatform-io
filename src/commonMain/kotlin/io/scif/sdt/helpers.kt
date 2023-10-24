@@ -60,7 +60,7 @@ class SdtHeader(buffer: BufferedSource) {
     val headerValid = buffer.us
 
     /** reserved1 now contains noOfDataBlocks */
-    val reserved1 = buffer.ul
+    val reserved1 = buffer.ui
 
     val reserved2 = buffer.us
 
@@ -165,7 +165,7 @@ fun SdtInfo(info: String) = SdtInfo(
     info.lines()
             .filter { it.isNotEmpty() }
             .drop(1).dropLast(1)
-            .map { it.split(':', limit = 2).map(String::trim)[1] })
+            .map { it.split(':', limit = 2).map { v -> v.trim { c -> c <= ' ' } }[1] })
 
 class SdtInfo(info: List<String>) {
     val id = info[0]
@@ -213,10 +213,10 @@ class SdtBHFileBlockHeader(handle: FileHandle, buf: BufferedSource) {
     val measDescBlockNo: Short = buf.i16
 
     /** Long blockNo - see remarks below.  */
-    val lblockNo: ULong = buf.ul
+    val lblockNo: UInt = buf.ui
 
     /** reserved2 now contains block (set) length.  */
-    val blockLength: ULong = buf.ul
+    val blockLength: UInt = buf.ui
 
     /** [Scifio] custom */
     val offset: ULong = handle.position(buf).ul

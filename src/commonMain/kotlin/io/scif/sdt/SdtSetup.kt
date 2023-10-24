@@ -3,6 +3,8 @@ package io.scif.sdt
 import io.scif.api.L
 import io.scif.api.f
 import io.scif.api.i
+import io.scif.api.i8
+import uns.i8
 import uns.ui
 
 fun SdtFormat.SdtSetup(setup: String): SdtSetup {
@@ -37,14 +39,14 @@ class SdtSetup(pr: List<String>,
         var pdev = 0
         var pport = 0
         var pwhat = 0
-        var pf = false
+        var pf = 0.i8
         var pfname = ""
         var porien = 0
-        var peject = false
+        var peject = 0.i8
         var pwidth = 0f
         var pheigh = 0f
-        var pfull = false
-        var pauto = false
+        var pfull = 0.i8
+        var pauto = 0.i8
         var stpFn = ""
         var saveT = 0
         var sleep = 0
@@ -52,20 +54,20 @@ class SdtSetup(pr: List<String>,
         init {
             for (token in pr) {
                 val prefix = "  #PR [PR_".length
-                val key = token.substring(prefix + 1, token.indexOf(',', prefix))
+                val key = token.substring(prefix, token.indexOf(',', prefix))
                 val v = token.substring(token.lastIndexOf(',') + 1, token.length - 1)
                 when (key) {
                     "PDEV" -> pdev = v.i
                     "PPORT" -> pport = v.i
                     "PWHAT" -> pwhat = v.i
-                    "PF" -> pf = v.i == 1
+                    "PF" -> pf = v.i8
                     "PFNAME" -> pfname = v
                     "PORIEN" -> porien = v.i
-                    "PEJECT" -> peject = v.i == 1
+                    "PEJECT" -> peject = v.i8
                     "PWIDTH" -> pwidth = v.f
                     "PHEIGH" -> pheigh = v.f
-                    "PFULL" -> pfull = v.i == 1
-                    "PAUTO" -> pauto = v.i == 1
+                    "PFULL" -> pfull = v.i8
+                    "PAUTO" -> pauto = v.i8
                     "STP_FN" -> stpFn = v
                     "SAVE_T" -> saveT = v.i
                     "SLEEP" -> sleep = v.i
@@ -99,41 +101,41 @@ class SdtSetup(pr: List<String>,
         var colT = 0f
         var repT = 0f
         var disT = 0f
-        var repeat = false
-        var stopt = false
+        var repeat = 0.i8
+        var stopt = 0.i8
         var overfl = '\u0000'
         var wlSta = 0f
         var wlSto = 0f
         var wlSte = 0f
-        var extst = false
+        var extst = 0.i8
         var steps = 0
         var offset = 0f
         var ywinN = 0
         var xwinN = 0
         var twinN = 0
-        var xEqu = false
-        var yEqu = false
-        var tEqu = false
+        var xEqu = 0.i8
+        var yEqu = 0.i8
+        var tEqu = 0.i8
         var dith = 0
-        var enInt = false
+        var enInt = 0.i8
         var incr = 0
-        var daes = false
+        var daes = 0.i8
         var speFN = ""
         var cycles = 0u
-        var daec = false
+        var daec = 0.i8
         var memBank = 0
-        var dtcomp = false
+        var dtcomp = 0.i8
         var scf = 0
         var polL = 0
         var polF = 0
         var pix = 0
         var ldiv = 0
-        var accum = false
-        var rout = false
+        var accum = 0.i8
+        var rout = 0.i8
         var tacEH = 0f
         var dlim = 0
         var photF = 0u
-        var enDlim = false
+        var enDlim = 0.i8
         var phBuf = 0
         var flbY = 0
         var flbX = 0
@@ -153,8 +155,8 @@ class SdtSetup(pr: List<String>,
         var addSel = 0
         var sxwinN = 0
         var sywinN = 0
-        var sxEqu = false
-        var syEqu = false
+        var sxEqu = 0.i8
+        var syEqu = 0.i8
         var asave = 0
         var adcZoom = 0
         var fifFno = 0
@@ -176,7 +178,7 @@ class SdtSetup(pr: List<String>,
         init {
             for (token in sp) {
                 val prefix = "  #SP [SP_".length
-                val key = token.substring(prefix + 1, token.indexOf(',', prefix))
+                val key = token.substring(prefix, token.indexOf(',', prefix))
                 val v = token.substring(token.lastIndexOf(',') + 1, token.length - 1)
                 when (key) {
                     "MODE" -> mode = v.i
@@ -206,41 +208,41 @@ class SdtSetup(pr: List<String>,
                     "COL_T" -> colT = v.f
                     "REP_T" -> repT = v.f
                     "DIS_T" -> disT = v.f
-                    "REPEAT" -> repeat = v.i == 1
-                    "STOPT" -> stopt = v.i == 1
+                    "REPEAT" -> repeat = v.i8
+                    "STOPT" -> stopt = v.i8
                     "OVERFL" -> overfl = v[0]
                     "WL_STA" -> wlSta = v.f
                     "WL_STO" -> wlSto = v.f
                     "WL_STE" -> wlSte = v.f
-                    "EXTST" -> extst = v.i == 1
+                    "EXTST" -> extst = v.i8
                     "STEPS" -> steps = v.i
                     "OFFSET" -> offset = v.f
                     "YWIN_N" -> ywinN = v.i
                     "XWIN_N" -> xwinN = v.i
                     "TWIN_N" -> twinN = v.i
-                    "X_EQU" -> xEqu = v.i == 1
-                    "Y_EQU" -> yEqu = v.i == 1
-                    "T_EQU" -> tEqu = v.i == 1
+                    "X_EQU" -> xEqu = v.i8
+                    "Y_EQU" -> yEqu = v.i8
+                    "T_EQU" -> tEqu = v.i8
                     "DITH" -> dith = v.i
-                    "EN_INT" -> enInt = v.i == 1
+                    "EN_INT" -> enInt = v.i8
                     "INCR" -> incr = v.i
-                    "DAES" -> daes = v.i == 1
+                    "DAES" -> daes = v.i8
                     "SPE_FN" -> speFN = v
                     "CYCLES" -> cycles = v.i.ui
-                    "DAEC" -> daec = v.i == 1
+                    "DAEC" -> daec = v.i8
                     "MEM_BANK" -> memBank = v.i
-                    "DTCOMP" -> dtcomp = v.i == 1
+                    "DTCOMP" -> dtcomp = v.i8
                     "SCF" -> scf = v.i
                     "POL_L" -> polL = v.i
                     "POL_F" -> polF = v.i
                     "PIX" -> pix = v.i
                     "LDIV" -> ldiv = v.i
-                    "ACCUM" -> accum = v.i == 1
-                    "ROUT" -> rout = v.i == 1
+                    "ACCUM" -> accum = v.i8
+                    "ROUT" -> rout = v.i8
                     "TAC_EH" -> tacEH = v.f
                     "DLIM" -> dlim = v.i
                     "PHOT_F" -> photF = v.i.ui
-                    "EN_DLIM" -> enDlim = v.i == 1
+                    "EN_DLIM" -> enDlim = v.i8
                     "PH_BUF" -> phBuf = v.i
                     "FLB_Y" -> flbY = v.i
                     "FLB_X" -> flbX = v.i
@@ -272,8 +274,8 @@ class SdtSetup(pr: List<String>,
                     "ADD_SEL" -> addSel = v.i
                     "SXWIN_N" -> sxwinN = v.i
                     "SYWIN_N" -> sywinN = v.i
-                    "SX_EQU" -> sxEqu = v.i == 1
-                    "SY_EQU" -> syEqu = v.i == 1
+                    "SX_EQU" -> sxEqu = v.i8
+                    "SY_EQU" -> syEqu = v.i8
                     "ASAVE" -> asave = v.i
                     "ADC_ZOOM" -> adcZoom = v.i
                     "FIF_FNO" -> fifFno = v.i
@@ -301,7 +303,7 @@ class SdtSetup(pr: List<String>,
         var maxcnt = 0L
         var lbline = 0L
         var bline = 0L
-        var grid = false
+        var grid = 0.i8
         var gcolF = 0
         var gcolB = 0
         var trace = 0
@@ -318,10 +320,10 @@ class SdtSetup(pr: List<String>,
         var twin = 0
         var pstyle = 0
         var pfreq = 0
-        var cur = false
-        var rate = false
-        var _2dc1 = false
-        var _2dc2 = false
+        var cur = 0.i8
+        var rate = 0.i8
+        var _2dc1 = 0.i8
+        var _2dc2 = 0.i8
         var _2dc1c = 0
         var _2dc2c = 0
         var _2dc1s = 0
@@ -340,9 +342,9 @@ class SdtSetup(pr: List<String>,
         var col4 = 0
         var col5 = 0
         var hicol = 0
-        var xrev = false
-        var yrev = false
-        var detail = false
+        var xrev = 0.i8
+        var yrev = 0.i8
+        var detail = 0.i8
         var sywin = 0
         var sxwin = 0
         var ascale = 0
@@ -350,14 +352,14 @@ class SdtSetup(pr: List<String>,
         init {
             for (token in di) {
                 val prefix = "  #DI [DI_".length
-                val key = token.substring(prefix + 1, token.indexOf(',', prefix))
+                val key = token.substring(prefix, token.indexOf(',', prefix))
                 val v = token.substring(token.lastIndexOf(',') + 1, token.length - 1)
                 when (key) {
                     "SCALE" -> scale = v.i
                     "MAXCNT" -> maxcnt = v.L
                     "LBLINE" -> lbline = v.L
                     "BLINE" -> bline = v.L
-                    "GRID" -> grid = v.i == 1
+                    "GRID" -> grid = v.i8
                     "GCOL_F" -> gcolF = v.i
                     "GCOL_B" -> gcolB = v.i
                     "TRACE" -> trace = v.i
@@ -374,10 +376,10 @@ class SdtSetup(pr: List<String>,
                     "TWIN" -> twin = v.i
                     "PSTYLE" -> pstyle = v.i
                     "PFREQ" -> pfreq = v.i
-                    "CUR" -> cur = v.i == 1
-                    "RATE" -> rate = v.i == 1
-                    "2DC1" -> _2dc1 = v.i == 1
-                    "2DC2" -> _2dc2 = v.i == 1
+                    "CUR" -> cur = v.i8
+                    "RATE" -> rate = v.i8
+                    "2DC1" -> _2dc1 = v.i8
+                    "2DC2" -> _2dc2 = v.i8
                     "2DC1C" -> _2dc1c = v.i
                     "2DC2C" -> _2dc2c = v.i
                     "2DC1S" -> _2dc1s = v.i
@@ -396,9 +398,9 @@ class SdtSetup(pr: List<String>,
                     "COL4" -> col4 = v.i
                     "COL5" -> col5 = v.i
                     "HICOL" -> hicol = v.i
-                    "XREV" -> xrev = v.i == 1
-                    "YREV" -> yrev = v.i == 1
-                    "DETAIL" -> detail = v.i == 1
+                    "XREV" -> xrev = v.i8
+                    "YREV" -> yrev = v.i8
+                    "DETAIL" -> detail = v.i8
                     "SYWIN" -> sywin = v.i
                     "SXWIN" -> sxwin = v.i
                     "ASCALE" -> ascale = v.i
@@ -415,22 +417,16 @@ class SdtSetup(pr: List<String>,
         }
     }
 
-    class WI(token: String) {
-
-        val a: Int
-        val b: Boolean
-        val c: Int
-        val dx: Int
-        val dy: Int
-
-        init {
-            val split = token.drop("  #WI #".length).split(' ')
-            a = split[0].i
-            b = split[1].drop(1) == "*YES"
-            c = split[2].drop(1).i
-            val (x, y) = split[3].drop(1).dropLast(1).split(',')
-            dx = x.i
-            dy = y.i
-        }
+    fun WI(token: String): WI {
+        val split = token.drop("  #WI #".length).split(' ')
+        val a = split[0].i
+        val b = split[1].drop(1) == "*YES"
+        val c = split[2].drop(1).i
+        val (x, y) = split[3].drop(1).dropLast(1).split(',')
+        val dx = x.i
+        val dy = y.i
+        return WI(a, b, c, dx, dy)
     }
+
+    data class WI(val a: Int, val b: Boolean, val c: Int, val dx: Int, val dy: Int)
 }

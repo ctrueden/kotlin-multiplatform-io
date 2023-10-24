@@ -20,7 +20,7 @@ class SdtMeasureInfo(buf: BufferedSource, format: SdtFormat) {
     val date: LocalDate = buf.readUtf8(11).dropLast(1).toLocalDate()
 
     /** Serial number of the module.  */
-    val modSerNo: String = buf.readUtf8(16).trim()
+    val modSerNo: String = buf.readUtf8(16).trim { c -> c <= ' ' }
 
     val measMode: Short = buf.i16
     val cfdLL: Float = buf.f
@@ -52,7 +52,7 @@ class SdtMeasureInfo(buf: BufferedSource, format: SdtFormat) {
     val memBank: Short = buf.i16
 
     /** Module type.  */
-    val modType: String = buf.readUtf8(16).trim()
+    val modType: String = buf.readUtf8(16).trim { c -> c <= ' ' }
 
     val synTH: Float = buf.f
     val deadTimeComp: Short = buf.i16
@@ -185,13 +185,13 @@ class SdtMeasFCSInfo(buf: BufferedSource) {
     val fcsDecayCalc: UShort = buf.us
 
     /** Macro time clock in 0.1 ns units.  */
-    val mtResol: ULong = buf.ul
+    val mtResol: UInt = buf.ui
 
     /** Correlation time [ms].  */
     val cortime: Float = buf.f
 
     /** No of photons.  */
-    val calcPhotons: ULong = buf.ul
+    val calcPhotons: UInt = buf.ui
 
     /** No of FCS values.  */
     val fcsPoints: Int = buf.i
@@ -226,7 +226,7 @@ class SdtMeasFCSInfo(buf: BufferedSource) {
     val crossMod: UShort = buf.us
 
     /** Macro time clock of cross FCS module in 0.1 ns units.  */
-    val crossMtResol: ULong = buf.ul
+    val crossMtResol: UInt = buf.ui
 }
 
 class SdtExtendedMeasureInfo(buf: BufferedSource) {

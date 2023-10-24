@@ -1,3 +1,7 @@
 This repository is an attempt to use [Kotlin Multiplatform](https://kotlinlang.org/docs/multiplatform-library.html) to create an I/O-focused library that works as a native shared library, a JAR for the JVM, and from JavaScript.
 
-Right now it fails to build due to the [kotlinx-io](https://github.com/Kotlin/kotlinx-io/) dependency declaration not being recognized. So the attempt to use kotlinx-io API fails to compile. As far as I can tell, the dependency declaration is done [according to the documentation](https://kotlinlang.org/docs/multiplatform-add-dependencies.html), so I am stumped as to why it does not work.
+This is based on the scifio master + manual cherry picking from `blocks-are-so-plane` 
+branch from Mark Hiner
+
+Current supported format so far:
+- SDT 
