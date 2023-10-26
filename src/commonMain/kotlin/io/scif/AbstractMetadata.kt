@@ -68,11 +68,7 @@ abstract class AbstractMetadata(list: List<ImageMetadata?>? = null) : AbstractHa
     override var datasetName: String? = null
 
     /* A table of Field key, value pairs */
-    override var table: MetaTable? = null
-        get() {
-            if (field == null) field = DefaultMetaTable(isFiltered)
-            return field
-        }
+    override var table: MetaTable? = DefaultMetaTable(isFiltered)
 
     constructor(copy: Metadata) : this(copy.all) {
         table = DefaultMetaTable(copy.table!!)

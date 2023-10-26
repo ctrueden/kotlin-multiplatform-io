@@ -94,7 +94,7 @@ abstract class AbstractChecker : AbstractHasFormat(), Checker {
     }
 
     @Throws(IOException::class)
-    fun isFormat(handle: FileHandle): Boolean = false
+    open fun isFormat(handle: FileHandle): Boolean = false
 
     override fun checkHeader(block: ByteArray): Boolean {
 //        val loc: BytesLocation = BytesLocation(block)

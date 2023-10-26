@@ -5,109 +5,110 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import okio.BufferedSource
 import okio.FileHandle
+import uns.L
 import uns.ul
 
 /**
  * Constructs a new SDT header by reading values from the given input source,
  * populating the given metadata table.
  */
-class SdtHeader(buffer: BufferedSource) {
+class SdtHeader(handle: ReadOnlyFileHandle) {
 
     /** Software revision number (lower 4 bits >= 10(decimal)). */
-    val revision = buffer.i16
+    val revision = handle.i16
 
     /**
      * Offset of the info part which contains general text information (Title,
      * date, time, contents etc.).
      */
-    val infoOffs = buffer.i
+    val infoOffs = handle.i
 
     /** Length of the info part. */
-    val infoLength = buffer.i16
+    val infoLength = handle.i16
 
     /**
      * Offset of the setup text data (system parameters, display parameters, trace
      * parameters etc.).
      */
-    val setupOffs = buffer.i
+    val setupOffs = handle.i
 
     /** Length of the setup data. */
-    val setupLength = buffer.us
+    val setupLength = handle.us
 
     /** Offset of the first data block. */
-    val dataBlockOffs = buffer.i
+    val dataBlockOffs = handle.i
 
     /**
      * no_of_data_blocks valid only when in 0 .. 0x7ffe range, if equal to 0x7fff
      * the field 'reserved1' contains valid no_of_data_blocks.
      */
-    val noOfDataBlocks = buffer.i16
+    val noOfDataBlocks = handle.i16
 
     /** length of the longest block in the file */
-    val dataBlockLength = buffer.i
+    val dataBlockLength = handle.i
 
     /** offset to 1st. measurement description block
      *  (system parameters connected to data blocks) */
-    val measDescBlockOffs = buffer.i
+    val measDescBlockOffs = handle.i
 
     /** number of measurement description blocks */
-    val noOfMeasDescBlocks = buffer.i16
+    val noOfMeasDescBlocks = handle.i16
 
     /** length of the measurement description blocks */
-    val measDescBlockLength = buffer.i16
+    val measDescBlockLength = handle.i16
 
     /** valid: 0x5555, not valid: 0x1111 */
-    val headerValid = buffer.us
+    val headerValid = handle.us
 
     /** reserved1 now contains noOfDataBlocks */
-    val reserved1 = buffer.ui
+    val reserved1 = handle.ui
 
-    val reserved2 = buffer.us
+    val reserved2 = handle.us
 
     /** checksum of file header */
-    val chksum = buffer.us
+    val chksum = handle.us
 
     // -- Fields - extended binary header --
     var extended: Extended? = null
 
-    class Extended(handle: FileHandle, buffer: BufferedSource) {
+    class Extended(handle: ReadOnlyFileHandle) {
 
         // BHBinHdr
 
         init {
-            buffer.skip(4)
+            handle + 4
         }
 
-        val baseOffset = handle.position(buffer).ul
-        val softwareRevision = buffer.ui
-        val paramLength = buffer.ui
-        val reserved1 = buffer.ui
-        val reserved2 = buffer.us
+        val baseOffset = handle.pos
+        val softwareRevision = handle.ui
+        val paramLength = handle.ui
+        val reserved1 = handle.ui
+        val reserved2 = handle.us
 
         // SPCBinHdr
 
-        val fcsOldOffset = buffer.ui
-        val fcsOldSize = buffer.ui
-        val gr1Offset = buffer.ui
-        val gr1Size = buffer.ui
-        val fcsOffset = buffer.ui
-        val fcsSize = buffer.ui
-        val fidaOffset = buffer.ui
-        val fidaSize = buffer.ui
-        val fildaOffset = buffer.ui
-        val fildaSize = buffer.ui
-        val gr2Offset = buffer.ui
-        val grNo = buffer.us
-        val hstNo = buffer.us
-        val hstOffset = buffer.ui
-        val gvdOffset = buffer.ui
-        val gvdSize = buffer.us
-        val fitOffset = buffer.us
-        val fitSize = buffer.us
-        val extdevOffset = buffer.us
-        val extdevSize = buffer.us
-        val binhdrextOffset = buffer.ui
-        val binhdrextSize = buffer.us
+        val fcsOldOffset = handle.ui
+        val fcsOldSize = handle.ui
+        val gr1Offset = handle.ui
+        val gr1Size = handle.ui
+        val fcsOffset = handle.ui
+        val fcsSize = handle.ui
+        val fidaOffset = handle.ui
+        val fidaSize = handle.ui
+        val fildaOffset = handle.ui
+        val fildaSize = handle.ui
+        val gr2Offset = handle.ui
+        val grNo = handle.us
+        val hstNo = handle.us
+        val hstOffset = handle.ui
+        val gvdOffset = handle.ui
+        val gvdSize = handle.us
+        val fitOffset = handle.us
+        val fitSize = handle.us
+        val extdevOffset = handle.us
+        val extdevSize = handle.us
+        val binhdrextOffset = handle.ui
+        val binhdrextSize = handle.us
 
         var mcsImgOffset = 0u
         var mcsImgSize = 0u
@@ -132,28 +133,28 @@ class SdtHeader(buffer: BufferedSource) {
         init {
 
             if (binhdrextOffset != 0u) {
-                handle.reposition(buffer, baseOffset + binhdrextOffset)
-                mcsImgOffset = buffer.ui
-                mcsImgSize = buffer.ui
-                momNo = buffer.us
-                momSize = buffer.us
-                momOffset = buffer.ui
-                sysparExtOffset = buffer.ui
-                sysparExtSize = buffer.ui
-                mosaicOffset = buffer.ui
-                mosaicSize = buffer.ui
+                handle.pos = baseOffset + binhdrextOffset.ul
+                mcsImgOffset = handle.ui
+                mcsImgSize = handle.ui
+                momNo = handle.us
+                momSize = handle.us
+                momOffset = handle.ui
+                sysparExtOffset = handle.ui
+                sysparExtSize = handle.ui
+                mosaicOffset = handle.ui
+                mosaicSize = handle.ui
                 // 52 longs reserved
 
                 if (mcsImgOffset != 0u) {
-                    handle.reposition(buffer, baseOffset + mcsImgOffset)
+                    handle.pos = baseOffset + mcsImgOffset
 
-                    mcsActive = buffer.i
-                    buffer.skip(4) // Window
-                    mcstaPoints = buffer.us
-                    mcstaFlags = buffer.us
-                    mcstaTimePerPoint = buffer.us
-                    mcsOffset = buffer.f
-                    mcsTpp = buffer.f
+                    mcsActive = handle.i
+                    handle + 4 // Window
+                    mcstaPoints = handle.us
+                    mcstaFlags = handle.us
+                    mcstaTimePerPoint = handle.us
+                    mcsOffset = handle.f
+                    mcsTpp = handle.f
                 }
             }
         }
@@ -187,7 +188,7 @@ internal fun nonZeroProduct(vararg args: Int): Int {
     return product
 }
 
-class SdtBHFileBlockHeader(handle: FileHandle, buf: BufferedSource) {
+class SdtBHFileBlockHeader(handle: ReadOnlyFileHandle) {
     // -- Fields - BHFileBlockHeader --
 
     /**
@@ -195,29 +196,29 @@ class SdtBHFileBlockHeader(handle: FileHandle, buf: BufferedSource) {
      * Valid only when in 0..0x7ffe range, otherwise use lblock_no field
      * obsolete now, lblock_no contains full block no information.
      */
-    val blockNo: Short = buf.i16
+    val blockNo: Short = handle.i16
 
     /** Offset of the data block from the beginning of the file.  */
-    val dataOffs: Int = buf.i
+    val dataOffs: Int = handle.i
 
     /** Offset to the data block header of the next data block.  */
-    val nextBlockOffs: Int = buf.i
+    val nextBlockOffs: Int = handle.i
 
     /** See blockType defines below.  */
-    val blockType: UShort = buf.us
+    val blockType: UShort = handle.us
 
     /**
      * Number of the measurement description block
      * corresponding to this data block.
      */
-    val measDescBlockNo: Short = buf.i16
+    val measDescBlockNo: Short = handle.i16
 
     /** Long blockNo - see remarks below.  */
-    val lblockNo: UInt = buf.ui
+    val lblockNo: UInt = handle.ui
 
     /** reserved2 now contains block (set) length.  */
-    val blockLength: UInt = buf.ui
+    val blockLength: UInt = handle.ui
 
     /** [Scifio] custom */
-    val offset: ULong = handle.position(buf).ul
+    val offset: ULong = handle.pos
 }

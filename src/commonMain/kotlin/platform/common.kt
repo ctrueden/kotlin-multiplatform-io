@@ -1,6 +1,16 @@
 package platform
 
-open class FormatException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * FormatException is the exception thrown when something goes wrong performing
+ * a file format operation.
+ */
+open class FormatException : Exception {
+    constructor() : super()
+    constructor(s: String) : super(s)
+    constructor(s: String, cause: Throwable) : super(s, cause)
+    constructor(cause: Throwable) : super(cause)
+}
 
 
 expect fun <R> synchronize(lock: Any, block: () -> R): R

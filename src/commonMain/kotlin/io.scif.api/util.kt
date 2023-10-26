@@ -1,4 +1,5 @@
 @file:Suppress("UNUSED", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:OptIn(ExperimentalStdlibApi::class)
 
 package io.scif.api
 
@@ -6,85 +7,80 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import okio.*
 import uns.*
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
 
-var bigEndian = false
-val BufferedSource.i8: Byte
-    get() = readByte()
-val BufferedSource.i16: Short
-    get() = if (bigEndian) readShort() else readShortLe()
-val BufferedSource.i32: Int
-    get() = if (bigEndian) readInt() else readIntLe()
-val BufferedSource.i: Int
-    get() = i32
-val BufferedSource.i64: Long
-    get() = if (bigEndian) readLong() else readLongLe()
-val BufferedSource.L: Long
-    get() = i64
 
-//val Source.f32: Float
-//	get() = readF
+inline fun <R> Path.readOnly(block: (ReadOnlyFileHandle) -> R): R =
+    hostFileSystem.openReadOnly(this).use { fileHandle ->
+        ReadOnlyFileHandle(fileHandle).use(block)
+    }
+class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
+    val bufferedSource = fileHandle.source().buffer()
 
-val BufferedSource.ub: UByte
-    get() = i8.ub
-val BufferedSource.us: UShort
-    get() = i16.us
-val BufferedSource.ui: UInt
-    get() = i.ui
-val BufferedSource.ul: ULong
-    get() = L.ul
+    var pos: ULong
+        get() = fileHandle.position(bufferedSource).ul
+        set(value) = fileHandle.reposition(bufferedSource, value.L)
 
-val BufferedSource.u8: U8
-    get() = ub.u8
-val BufferedSource.u16: U16
-    get() = us.u16
-val BufferedSource.u32: U32
-    get() = ui.u32
-val BufferedSource.u64: U64
-    get() = ul.u64
+    infix fun pos(pos: Int) = fileHandle.reposition(bufferedSource, pos.L)
+    infix fun pos(pos: Long) = fileHandle.reposition(bufferedSource, pos)
 
-val BufferedSource.f32: F32
-    get() = Float.fromBits(i)
-val BufferedSource.f: F32
-    get() = f32
-val BufferedSource.f64: F64
-    get() = Double.fromBits(L)
 
-fun BufferedSource.localTime(byteCount: Int) = LocalTime.parse(readUtf8(byteCount))
-fun BufferedSource.localDate(byteCount: Int) = LocalDate.parse(readUtf8(byteCount))
+    var bigEndian = false
+    val i8: Byte
+        get() = bufferedSource.readByte()
+    val i16: Short
+        get() = if (bigEndian) bufferedSource.readShort() else bufferedSource.readShortLe()
+    val i32: Int
+        get() = if (bigEndian) bufferedSource.readInt() else bufferedSource.readIntLe()
+    val i: Int
+        get() = i32
+    val i64: Long
+        get() = if (bigEndian) bufferedSource.readLong() else bufferedSource.readLongLe()
+    val L: Long
+        get() = i64
 
-inline infix fun BufferedSource.readUtf8(byteCount: Short): String = readUtf8(byteCount.L)
-inline infix fun BufferedSource.readUtf8(byteCount: UShort): String = readUtf8(byteCount.L)
-inline infix fun BufferedSource.readUtf8(byteCount: Int): String = readUtf8(byteCount.L)
+    //val Source.f32: Float
+    //	get() = readF
 
-@ExperimentalContracts
-inline fun <R> FileHandle.buffer(block: (BufferedSource) -> R): R {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return buffer(0, block)
+    val ub: UByte
+        get() = i8.ub
+    val us: UShort
+        get() = i16.us
+    val ui: UInt
+        get() = i.ui
+    val ul: ULong
+        get() = L.ul
+
+    val u8: U8
+        get() = ub.u8
+    val u16: U16
+        get() = us.u16
+    val u32: U32
+        get() = ui.u32
+    val u64: U64
+        get() = ul.u64
+
+    val f32: F32
+        get() = Float.fromBits(i)
+    val f: F32
+        get() = f32
+    val f64: F64
+        get() = Double.fromBits(L)
+
+    operator fun plus(byteCount: Int) = skip(byteCount)
+    operator fun plus(byteCount: Long) = skip(byteCount)
+    infix fun skip(byteCount: Int) = skip(byteCount.L)
+    infix fun skip(byteCount: Long) = bufferedSource.skip(byteCount)
+
+    fun localTime(byteCount: Int) = LocalTime.parse(utf8(byteCount))
+    fun localDate(byteCount: Int) = LocalDate.parse(utf8(byteCount))
+
+    inline infix fun utf8(byteCount: Short): String = utf8(byteCount.L)
+    inline infix fun utf8(byteCount: UShort): String = utf8(byteCount.L)
+    inline infix fun utf8(byteCount: Int): String = utf8(byteCount.L)
+    inline infix fun utf8(byteCount: Long): String = bufferedSource.readUtf8(byteCount)
+
+    override fun close() = bufferedSource.close()
 }
-
-@ExperimentalContracts
-inline fun <R> FileHandle.buffer(offset: Int, block: (BufferedSource) -> R): R {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return source(offset.toLong()).buffer().use(block)
-}
-
-@ExperimentalContracts
-inline fun <R> FileHandle.seek(offset: Int, block: (BufferedSource) -> R): R {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return seek(offset.toULong(), block)
-}
-
-@ExperimentalContracts
-inline fun <R> FileHandle.seek(offset: ULong, block: (BufferedSource) -> R): R {
-    contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-    return source(offset.L).buffer().use(block)
-}
-
-inline fun FileHandle.reposition(bufferedSource: BufferedSource, position: Int) = reposition(bufferedSource, position.L)
-inline fun FileHandle.reposition(bufferedSource: BufferedSource, position: ULong) = reposition(bufferedSource, position.L)
 
 //var Buffer.pos: Int
 //    set(value) {
