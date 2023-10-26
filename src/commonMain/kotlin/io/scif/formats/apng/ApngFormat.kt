@@ -29,6 +29,7 @@
 package io.scif.formats.apng
 
 import io.scif.*
+import io.scif.api.ReadOnlyFileHandle
 //import io.scif.gui.AWTImageTools
 //import io.scif.gui.BufferedImageReader
 import io.scif.util.FormatTools
@@ -855,7 +856,7 @@ class APNGFormat : AbstractFormat() {
         // Offset in the file data stream. Points to the start of the
         // data of the chunk, which comes after an entry for the length
         // and the chunk's signature.
-        var offset: Long = 0
+        var offset: ULong = 0u
 
         // Length of the chunk
         var length: Int = 0
@@ -881,14 +882,14 @@ class APNGFormat : AbstractFormat() {
      * The IHDR is always the first chunk of a correct PNG or APNG image file.
      *
      */
-    class IHDRChunk : APNGChunk(byteArrayOf(0x49.i8, 0x48, 0x44, 0x52)) {
-        @Field(label = "Width") var width: Int = 0
-        @Field(label = "height") var height: Int = 0
-        @Field(label = "Bit depth") var bitDepth: Byte = 0
-        @Field(label = "Colour type") var colourType: Byte = 0
-        @Field(label = "Compression Method") var compressionMethod: Byte = 0
-        @Field(label = "Filter method") var filterMethod: Byte = 0
-        @Field(label = "Interlace method") var interlaceMethod: Byte = 0
+    class IHDRChunk(handle: ReadOnlyFileHandle) : APNGChunk(byteArrayOf(0x49.i8, 0x48, 0x44, 0x52)) {
+        @Field(label = "Width") var width: Int = handle.i
+        @Field(label = "height") var height: Int = handle.i
+        @Field(label = "Bit depth") var bitDepth: Byte = handle.i8
+        @Field(label = "Colour type") var colourType: Byte = handle.i8
+        @Field(label = "Compression Method") var compressionMethod: Byte = handle.i8
+        @Field(label = "Filter method") var filterMethod: Byte = handle.i8
+        @Field(label = "Interlace method") var interlaceMethod: Byte = handle.i8
     }
 
     /**
@@ -899,18 +900,20 @@ class APNGFormat : AbstractFormat() {
      * only present in certain ARGB color formats.
      *
      */
-    class PLTEChunk  // -- Constructor --
-        : APNGChunk(byteArrayOf(0x50.toByte(), 0x4C, 0x54, 0x45)) {
-        // -- Methods --
-        // -- Fields --
+    class PLTEChunk(handle: ReadOnlyFileHandle, length: Int): APNGChunk(byteArrayOf(0x50.toByte(), 0x4C, 0x54, 0x45)) {
         // Red palette entries
-        lateinit var red: ByteArray
-
+        val red = ByteArray(length)
         // Green palette entries
-        lateinit var green: ByteArray
-
+        val green = ByteArray(length)
         // Blue palette entries
-        lateinit var blue: ByteArray
+        val blue = ByteArray(length)
+        init {
+            for (i in 0..<length) {
+                red[i] = handle.i8
+                green[i] = handle.i8
+                blue[i] = handle.i8
+            }
+        }
     }
 
     /**
@@ -921,34 +924,34 @@ class APNGFormat : AbstractFormat() {
      * (if the default image is also the first frame of the animation).
      *
      */
-    class FCTLChunk : APNGChunk(byteArrayOf(0x66.toByte(), 0x63, 0x54, 0x4C)) {
+    class FCTLChunk(handle: ReadOnlyFileHandle) : APNGChunk(byteArrayOf(0x66.toByte(), 0x63, 0x54, 0x4C)) {
         // -- Fields --
         /* Sequence number of the animation chunk, starting from 0 */
-        @Field(label = "sequence_number") var sequenceNumber: Int = 0
+        @Field(label = "sequence_number") var sequenceNumber: Int = handle.i
 
         /* Width of the following frame */
-        @Field(label = "width") var width: Int = 0
+        @Field(label = "width") var width: Int = handle.i
 
         /* Height of the following frame */
-        @Field(label = "height") var height: Int = 0
+        @Field(label = "height") var height: Int = handle.i
 
         /* X position at which to render the following frame */
-        @Field(label = "x_offset")                /*private*/ var xOffset = 0
+        @Field(label = "x_offset")                /*private*/ var xOffset = handle.i
 
         /* Y position at which to render the following frame */
-        @Field(label = "y_offset")                /*private*/ var yOffset = 0
+        @Field(label = "y_offset")                /*private*/ var yOffset = handle.i
 
         /* Frame delay fraction numerator */
-        @Field(label = "delay_num") var delayNum: Short = 0
+        @Field(label = "delay_num") var delayNum: Short = handle.i16
 
         /* Frame delay fraction denominator */
-        @Field(label = "delay_den") var delayDen: Short = 0
+        @Field(label = "delay_den") var delayDen: Short = handle.i16
 
         /* Type of frame area disposal to be done after rendering this frame */
-        @Field(label = "dispose_op") var disposeOp: Byte = 0
+        @Field(label = "dispose_op") var disposeOp: Byte = handle.i8
 
         /* Type of frame area rendering for this frame */
-        @Field(label = "blend_op") var blendOp: Byte = 0
+        @Field(label = "blend_op") var blendOp: Byte = handle.i8
 
         /*private */val fdatChunks: ArrayList<FDATChunk> = ArrayList()
 
@@ -980,15 +983,15 @@ class APNGFormat : AbstractFormat() {
      * image, and how many times the animation sequence should be played.
      *
      */
-    class ACTLChunk : APNGChunk(byteArrayOf(0x61.i8, 0x63, 0x54, 0x4C)) {
+    class ACTLChunk(handle: ReadOnlyFileHandle) : APNGChunk(byteArrayOf(0x61.i8, 0x63, 0x54, 0x4C)) {
         /* Sequence number of the animation chunk, starting from 0 */
         @Field(label = "sequence_number") var sequenceNumber: Int = 0
 
         /* Number of frames in this APNG file */
-        @Field(label = "num_frames") var numFrames = 0
+        @Field(label = "num_frames") var numFrames = handle.i
 
         /* Times to play the animation sequence */
-        @Field(label = "num_plays") var numPlays = 0
+        @Field(label = "num_plays") var numPlays = handle.i
     }
 
     /**
@@ -1007,9 +1010,9 @@ class APNGFormat : AbstractFormat() {
      * Each fdAT chunk is paired with an fcTL chunk.
      *
      */
-    class FDATChunk : APNGChunk(byteArrayOf(0x66.i8, 0x64, 0x41, 0x54)) {
+    class FDATChunk(handle: ReadOnlyFileHandle) : APNGChunk(byteArrayOf(0x66.i8, 0x64, 0x41, 0x54)) {
         /** Sequence number of the animation chunk, starting from 0  */
-        @Field(label = "sequence_number") var sequenceNumber: Int = 0
+        @Field(label = "sequence_number") var sequenceNumber: Int = handle.i
     }
 
     /**

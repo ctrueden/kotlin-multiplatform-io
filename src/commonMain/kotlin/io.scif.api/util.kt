@@ -20,6 +20,11 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
         get() = fileHandle.position(bufferedSource).ul
         set(value) = fileHandle.reposition(bufferedSource, value.L)
 
+    val size: ULong
+        get() = fileHandle.size().ul
+    val rem: ULong
+        get() = size - pos
+
     infix fun pos(pos: Int) = fileHandle.reposition(bufferedSource, pos.L)
     infix fun pos(pos: Long) = fileHandle.reposition(bufferedSource, pos)
 
@@ -68,6 +73,7 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
 
     operator fun plus(byteCount: Int) = skip(byteCount)
     operator fun plus(byteCount: Long) = skip(byteCount)
+    fun skipTillEnd() = skip(fileHandle.size() - pos.L)
     infix fun skip(byteCount: Int) = skip(byteCount.L)
     infix fun skip(byteCount: Long) = bufferedSource.skip(byteCount)
 
@@ -78,6 +84,14 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
     inline infix fun utf8(byteCount: UShort): String = utf8(byteCount.L)
     inline infix fun utf8(byteCount: Int): String = utf8(byteCount.L)
     inline infix fun utf8(byteCount: Long): String = bufferedSource.readUtf8(byteCount)
+
+    fun bytes(byteCount: Int) = bytes(byteCount.L)
+    fun bytes(byteCount: Long) = bufferedSource.readByteArray(byteCount)
+
+    val exhausted
+        get() = bufferedSource.exhausted()
+    val notExhausted
+        get() = !exhausted
 
     override fun close() = bufferedSource.close()
 }
