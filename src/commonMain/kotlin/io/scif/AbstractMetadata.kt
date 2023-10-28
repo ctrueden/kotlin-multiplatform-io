@@ -96,7 +96,7 @@ abstract class AbstractMetadata(list: List<ImageMetadata?>? = null) : AbstractHa
     //    }
 
     override operator fun get(imageIndex: Int): ImageMetadata {
-        ensureMetadataExists(imageIndex)
+//        ensureMetadataExists(imageIndex)
         return imageMeta!![imageIndex]!!
     }
 

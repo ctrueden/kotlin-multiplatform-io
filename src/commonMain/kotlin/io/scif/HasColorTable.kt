@@ -49,5 +49,5 @@ interface HasColorTable {
     /**
      * @return The ColorTable associated with this component.
      */
-    fun getColorTable(imageIndex: Int, planeIndex: Long): ColorTable
+    fun getColorTable(imageIndex: Int, planeIndex: Long): ColorTable?
 }

@@ -33,48 +33,42 @@
  */
 package net.imglib2.display
 
+import uns.and
+import uns.i
+import uns.i8
+import uns.ui
+import kotlin.experimental.and
+
 /**
  * 8-bit color lookup table.
  *
  * @author Stephan Saalfeld
  * @author Curtis Rueden
  */
-//class ColorTable8 : AbstractArrayColorTable<ByteArray?> {
-//    /** Initializes an 8-bit color table with a linear grayscale ramp.  */
-//    constructor() : super(gray())
-//
-//    /** Initializes an 8-bit color table with the given table values.  */
-//    constructor(vararg values: ByteArray?) : super(values)
-//
-//    val length: Int
-//        get() = values.get(0).length
-//    val bits: Int
-//        get() = 8
-//
-//    operator fun get(comp: Int, bin: Int): Int {
-//        return getNative(comp, bin)
-//    }
-//
-//    fun getNative(comp: Int, bin: Int): Int {
-//        return values.get(comp).get(bin) and 0xff
-//    }
-//
-//    fun getResampled(comp: Int, bins: Int, bin: Int): Int {
-//        val newBin = (length.toLong() * bin / bins).toInt()
-//        return getNative(comp, newBin)
-//    }
-//
-//    companion object {
-//        // -- Helper methods --
-//        /** Creates a linear grayscale ramp with 3 components and 256 values.  */
-//        private fun gray(): Array<ByteArray> {
-//            val gray = Array(3) { ByteArray(256) }
-//            for (j in gray.indices) {
-//                for (i in gray[j].indices) {
-//                    gray[j][i] = i.toByte()
-//                }
-//            }
-//            return gray
-//        }
-//    }
-//}
+class ColorTable8 : AbstractArrayColorTable<ByteArray> {
+    /** Initializes an 8-bit color table with a linear grayscale ramp.  */
+    constructor() : super(gray())
+
+    /** Initializes an 8-bit color table with the given table values.  */
+    constructor(vararg values: ByteArray) : super(values as Array<ByteArray>)
+
+    override val length: Int
+        get() = values[0].size
+    override val bits: Int
+        get() = 8
+
+    override operator fun get(comp: Int, bin: Int): Int = getNative(comp, bin).i
+
+    override fun getNative(comp: Int, bin: Int): UInt = values[comp][bin].ui
+
+    override fun getResampled(comp: Int, bins: Int, bin: Int): Int {
+        val newBin = (length.toLong() * bin / bins).i
+        return getNative(comp, newBin).i
+    }
+
+    companion object {
+        // -- Helper methods --
+        /** Creates a linear grayscale ramp with 3 components and 256 values.  */
+        private fun gray(): Array<ByteArray> = Array(3) { ByteArray(256) { it.i8 } }
+    }
+}

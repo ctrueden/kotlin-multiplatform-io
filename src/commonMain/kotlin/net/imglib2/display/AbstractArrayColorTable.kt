@@ -63,8 +63,7 @@ abstract class AbstractArrayColorTable<T>(
 
     // -- ColorTable methods --
     override fun lookupARGB(min: Double, max: Double, value: Double): Int {
-        val bins: Int = length
-        val bin: Int = Binning.valueToBin(bins, min, max, value)
+        val bin = Binning.valueToBin(length, min, max, value)
         return argb(bin)
     }
 

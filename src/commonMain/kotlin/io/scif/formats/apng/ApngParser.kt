@@ -65,7 +65,7 @@ class ApngParser : AbstractParser<APNGFormat.Metadata>() {
                 it.length = length
             }
 
-            if (handle.rem > 4u)
+            if (handle.rem >= 4u)
                 handle + 4 // skip the CRC
         }
     }

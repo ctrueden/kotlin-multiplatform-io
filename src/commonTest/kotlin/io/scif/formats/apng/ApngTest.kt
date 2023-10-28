@@ -12,7 +12,7 @@ import kotlin.test.Test
 class ApngTest {
 
     val String.path
-        get() = hostFileSystem.canonicalize("./build/resources/apng/$this.png".toPath())
+        get() = hostFileSystem.canonicalize("./build/resources/$this.png".toPath())
 
     @Test
     fun `scifio-test`() {

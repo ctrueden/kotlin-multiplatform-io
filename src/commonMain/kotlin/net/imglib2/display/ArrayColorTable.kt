@@ -70,5 +70,5 @@ interface ArrayColorTable<T> : ColorTable {
      * The index into the color table.
      * @return The value of the table at the specified position.
      */
-    fun getNative(comp: Int, bin: Int): Int
+    fun getNative(comp: Int, bin: Int): UInt
 }

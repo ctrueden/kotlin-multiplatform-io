@@ -13,7 +13,8 @@ inline fun <R> Path.readOnly(block: (ReadOnlyFileHandle) -> R): R =
     hostFileSystem.openReadOnly(this).use { fileHandle ->
         ReadOnlyFileHandle(fileHandle).use(block)
     }
-class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
+
+class ReadOnlyFileHandle(val fileHandle: FileHandle) : AutoCloseable {
     val bufferedSource = fileHandle.source().buffer()
 
     var pos: ULong
@@ -72,7 +73,18 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle): AutoCloseable {
         get() = Double.fromBits(L)
 
     operator fun plus(byteCount: Int) = skip(byteCount)
+    operator fun plus(byteCount: UInt) = skip(byteCount.L)
+    operator fun plus(byteCount: ULong) = skip(byteCount.L)
     operator fun plus(byteCount: Long) = skip(byteCount)
+    operator fun plusAssign(byteCount: Int) = plusAssign(byteCount.ui)
+    operator fun plusAssign(byteCount: UInt) {
+        pos += byteCount
+    }
+    operator fun minusAssign(byteCount: Int) =  minusAssign(byteCount.ui)
+    operator fun minusAssign(byteCount: UInt) {
+        pos -= byteCount
+    }
+
     fun skipTillEnd() = skip(fileHandle.size() - pos.L)
     infix fun skip(byteCount: Int) = skip(byteCount.L)
     infix fun skip(byteCount: Long) = bufferedSource.skip(byteCount)

@@ -1,5 +1,6 @@
 import de.undercouch.gradle.tasks.download.Download
 import magik.github
+import org.gradle.kotlin.dsl.support.listFilesOrdered
 
 plugins {
     embeddedKotlin("multiplatform")
@@ -70,14 +71,14 @@ kotlin {
 }
 
 tasks {
-
-    val downloadZipFile by registering(Download::class) {
-        src("https://samples.scif.io/test-png.zip")
-        dest(layout.buildDirectory.file("tmp/assets/test-png.zip"))
+    val downloadResources by registering(Download::class) {
+        src(listOf("png", "avi").map { "https://samples.scif.io/test-$it.zip" })
+        dest(layout.buildDirectory.file("tmp/assets"))
     }
-    val downloadAndUnzipFile by registering(Copy::class) {
-        dependsOn(downloadZipFile)
-        from(zipTree(downloadZipFile.get().dest))
-        into(layout.buildDirectory.file("resources/apng"))
+    val downloadAndUnzipResources by registering(Copy::class) {
+        dependsOn(downloadResources)
+        for(file in downloadResources.get().dest.listFilesOrdered())
+            from(zipTree(file))
+        into(layout.buildDirectory.file("resources"))
     }
 }

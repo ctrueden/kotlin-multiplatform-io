@@ -77,7 +77,11 @@ interface Named {
  *
  * @author Mark Hiner
  */
-abstract class AbstractHasSource : AbstractHasFormat(), HasSource
+abstract class AbstractHasSource : AbstractHasFormat(), HasSource {
+
+    @Throws(IOException::class)
+    override fun close() = close(false)
+}
 
 /**
  * Super-interface for SCIFIO components that relate back to a [io.scif.Format].
