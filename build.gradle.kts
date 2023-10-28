@@ -72,7 +72,7 @@ kotlin {
 
 tasks {
     val downloadResources by registering(Download::class) {
-        src(listOf("png", "avi").map { "https://samples.scif.io/test-$it.zip" })
+        src(listOf("test-png", "test-avi", "kidney_TFl").map { "https://samples.scif.io/$it.zip" })
         dest(layout.buildDirectory.file("tmp/assets"))
     }
     val downloadAndUnzipResources by registering(Copy::class) {

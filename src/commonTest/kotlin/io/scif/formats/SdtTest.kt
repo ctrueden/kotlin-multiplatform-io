@@ -1,7 +1,9 @@
-package io.scif.formats.sdt
+package io.scif.formats
 
 import io.scif.`==`
 import io.scif.api.readOnly
+import io.scif.formats.sdt.SdtFormat
+import io.scif.formats.sdt.SdtSetup
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import okio.Path.Companion.toPath

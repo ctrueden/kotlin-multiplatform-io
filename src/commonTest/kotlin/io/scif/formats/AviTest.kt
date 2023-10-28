@@ -1,8 +1,9 @@
-package io.scif.formats.avi
+package io.scif.formats
 
 import io.scif.`==`
 import io.scif.api.hostFileSystem
 import io.scif.api.readOnly
+import io.scif.formats.avi.AVIFormat
 import okio.Path.Companion.toPath
 import kotlin.test.Test
 

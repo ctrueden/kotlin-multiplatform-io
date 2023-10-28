@@ -1,12 +1,12 @@
-package io.scif.formats.apng
+package io.scif.formats
 
 import io.scif.`==`
 import io.scif.api.hostFileSystem
 import io.scif.api.readOnly
+import io.scif.formats.apng.APNGFormat
+import io.scif.formats.apng.ApngParser
 import okio.Path.Companion.toPath
-import okio.use
 import uns.i8
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class ApngTest {
