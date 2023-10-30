@@ -23,7 +23,7 @@ class ApngParser : AbstractParser<APNGFormat.Metadata>() {
         handle.bigEndian = true
 
         // check that this is a valid PNG file
-        val signature = handle.bytes(8)
+        val signature = handle bytes 8
 
         if (!signature.contentEquals(byteArrayOf(0x89.i8, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)))
             throw FormatException("Invalid PNG signature.")

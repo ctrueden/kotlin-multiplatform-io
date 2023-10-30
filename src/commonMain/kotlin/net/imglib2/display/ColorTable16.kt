@@ -11,13 +11,13 @@
  * %%
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,40 +36,51 @@
 package net.imglib2.display
 
 import uns.i
-import uns.ub
 import uns.ui
+import uns.us
 
 /**
- * 8-bit color lookup table.
+ * 16-bit color lookup table.
  *
  * @author Stephan Saalfeld
  * @author Curtis Rueden
  */
-class ColorTable8 : AbstractArrayColorTable<UByteArray> {
-    /** Initializes an 8-bit color table with a linear grayscale ramp.  */
+class ColorTable16 : AbstractArrayColorTable<UShortArray> {
+    /**
+     * Initializes a 16-bit color table with a linear grayscale ramp.
+     */
     constructor() : super(gray())
-    constructor(ubytes: UByteArray) : this(arrayOf(ubytes))
 
-    /** Initializes an 8-bit color table with the given table values.  */
-    constructor(values: Array<UByteArray>) : super(values)
+    /**
+     * Initializes a 16-bit color table with the given table values.
+     */
+    constructor(values: Array<UShortArray>) : super(values)
 
     override val length: Int
         get() = values[0].size
+
     override val bits: Int
-        get() = 8
+        get() = 16
 
-    override operator fun get(comp: Int, bin: Int): Int = getNative(comp, bin).i
+    override fun get(comp: Int, bin: Int): Int {
+        // convert 0xffff to 0xff
+        return (getNative(comp, bin) shr 8).i
+    }
 
-    override fun getNative(comp: Int, bin: Int): UInt = values[comp][bin].ui
+    override fun getNative(comp: Int, bin: Int): UInt =
+        // returns short value as unsigned, expressed as int
+        values[comp][bin].ui
 
     override fun getResampled(comp: Int, bins: Int, bin: Int): Int {
         val newBin = (length.toLong() * bin / bins).i
-        return getNative(comp, newBin).i
+        return get(comp, newBin)
     }
 
     companion object {
         // -- Helper methods --
-        /** Creates a linear grayscale ramp with 3 components and 256 values.  */
-        private fun gray(): Array<UByteArray> = Array(3) { UByteArray(256) { it.ub } }
+        /**
+         * Creates a linear grayscale ramp with 3 components and 65536 values.
+         */
+        private fun gray(): Array<UShortArray> = Array(3) { UShortArray(65536) { it.us } }
     }
 }

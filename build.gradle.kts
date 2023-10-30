@@ -72,7 +72,8 @@ kotlin {
 
 tasks {
     val downloadResources by registering(Download::class) {
-        src(listOf("test-png", "test-avi", "kidney_TFl").map { "https://samples.scif.io/$it.zip" })
+        val scifio = listOf("test-png", "test-avi", "kidney_TFl", /*"test-dicom"*/).map { "https://samples.scif.io/$it.zip" }
+        src(scifio + "https://www.rubomedical.com/dicom_files/dicom_viewer_0002.zip")
         dest(layout.buildDirectory.file("tmp/assets"))
     }
     val downloadAndUnzipResources by registering(Copy::class) {

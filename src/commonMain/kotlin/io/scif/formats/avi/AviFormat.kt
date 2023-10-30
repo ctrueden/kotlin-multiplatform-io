@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package io.scif.formats.avi
 
 import io.scif.*
@@ -513,19 +515,19 @@ class AVIFormat : AbstractFormat() {
                                                 throw FormatException("$bpp bits per pixel not supported")
                                             if (bmpActualColorsUsed != 0u) {
                                                 // read the palette
-                                                val lut = Array(3) { ByteArray(bmpFormat.clrUsed.i) }
+                                                val lut = Array(3) { UByteArray(bmpFormat.clrUsed.i) }
                                                 for (i in 0..<bmpFormat.clrUsed.i)
                                                     if (bmpFormat.compression != Y8) {
-                                                        lut[2][i] = handle.i8
-                                                        lut[1][i] = handle.i8
-                                                        lut[0][i] = handle.i8
+                                                        lut[2][i] = handle.ub
+                                                        lut[1][i] = handle.ub
+                                                        lut[0][i] = handle.ub
                                                         handle + 1
                                                     } else {
-                                                        lut[0][i] = i.i8
-                                                        lut[1][i] = i.i8
-                                                        lut[2][i] = i.i8
+                                                        lut[0][i] = i.ub
+                                                        lut[1][i] = i.ub
+                                                        lut[2][i] = i.ub
                                                     }
-                                                meta.lut = ColorTable8(lut[0], lut[1], lut[2])
+                                                meta.lut = ColorTable8(arrayOf(lut[0], lut[1], lut[2]))
                                             }
                                             handle.pos = spos + cb
                                         }

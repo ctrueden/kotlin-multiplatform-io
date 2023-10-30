@@ -26,6 +26,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 package io.scif.formats.bmp
 
 import io.scif.*
@@ -212,14 +214,14 @@ class BmpFormat : AbstractFormat() {
 
             // read the palette, if it exists
             if (meta.dibHeader.nColors != 0u && meta.dibHeader.bitsPerPixel.i == 8) {
-                val palette = Array(3) { ByteArray(256) }
+                val palette = Array(3) { UByteArray(256) }
 
                 for (i in 0 until meta.dibHeader.nColors.i) {
                     for (j in palette.indices.reversed())
-                        palette[j][i] = handle.i8
+                        palette[j][i] = handle.ub
                     handle + 1
                 }
-                meta.palette = ColorTable8(*palette)
+                meta.palette = ColorTable8(palette)
             } else if (meta.dibHeader.nColors != 0u)
                 handle + (meta.dibHeader.nColors * 4u)
 

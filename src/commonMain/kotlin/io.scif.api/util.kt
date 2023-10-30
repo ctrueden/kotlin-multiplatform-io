@@ -1,5 +1,5 @@
 @file:Suppress("UNUSED", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
-@file:OptIn(ExperimentalStdlibApi::class)
+@file:OptIn(ExperimentalStdlibApi::class, ExperimentalUnsignedTypes::class)
 
 package io.scif.api
 
@@ -26,11 +26,16 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle) : AutoCloseable {
     val rem: ULong
         get() = size - pos
 
-    infix fun pos(pos: Int) = fileHandle.reposition(bufferedSource, pos.L)
+    infix fun pos(pos: Int) = pos(pos.ul)
+    infix fun pos(pos: ULong) = pos(pos.L)
     infix fun pos(pos: Long) = fileHandle.reposition(bufferedSource, pos)
 
 
     var bigEndian = false
+    val isBigEndian
+        get() = bigEndian
+    val isLittleEndian
+        get() = !isBigEndian
     val i8: Byte
         get() = bufferedSource.readByte()
     val i16: Short
@@ -95,10 +100,15 @@ class ReadOnlyFileHandle(val fileHandle: FileHandle) : AutoCloseable {
     inline infix fun utf8(byteCount: Short): String = utf8(byteCount.L)
     inline infix fun utf8(byteCount: UShort): String = utf8(byteCount.L)
     inline infix fun utf8(byteCount: Int): String = utf8(byteCount.L)
+    inline infix fun utf8(byteCount: UInt): String = utf8(byteCount.L)
     inline infix fun utf8(byteCount: Long): String = bufferedSource.readUtf8(byteCount)
 
-    fun bytes(byteCount: Int) = bytes(byteCount.L)
-    fun bytes(byteCount: Long) = bufferedSource.readByteArray(byteCount)
+    infix fun bytes(byteCount: UInt) = bytes(byteCount.L)
+    infix fun bytes(byteCount: Int) = bytes(byteCount.L)
+    infix fun bytes(byteCount: Long) = bufferedSource.readByteArray(byteCount)
+
+    infix fun ubytes(byteCount: Int) = ubytes(byteCount.L)
+    infix fun ubytes(byteCount: Long) = bytes(byteCount).toUByteArray()
 
     val exhausted
         get() = bufferedSource.exhausted()
@@ -127,3 +137,8 @@ val String.L: Long
     get() = toLong()
 val String.f: Float
     get() = toFloat()
+val String.f64: Double
+    get() = toDouble()
+
+val Double.i
+    get() = toInt()
